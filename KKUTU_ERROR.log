@@ -322,4 +322,18 @@ TypeError: Cannot read properties of undefined (reading '15')
     at my.submit (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1413:13)
     at Timeout._onTimeout (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:226:6)
     at listOnTimeout (node:internal/timers:588:17)
-    at process.processTimers (node:internal/timers:523:7)
+    at process.processTimers (node:internal/timers:523:7):8496 [2025. 12. 7. 오전 4:03:32] ERROR: TypeError: Cannot read properties of undefined (reading '$not')
+TypeError: Cannot read properties of undefined (reading '$not')
+    at wSearch (C:\myKKuTu\KKuTu-master\Server\lib\sub\collection.js:132:18)
+    at Array.map (<anonymous>)
+    at sqlWhere (C:\myKKuTu\KKuTu-master\Server\lib\sub\collection.js:147:11)
+    at pointer.on (C:\myKKuTu\KKuTu-master\Server\lib\sub\collection.js:324:40)
+    at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\classic.js:63:59
+    at new Promise (<anonymous>)
+    at getAttackChars (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\classic.js:40:9)
+    at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\classic.js:858:6
+    at exports.Tail.go (C:\myKKuTu\KKuTu-master\Server\lib\sub\lizard.js:43:16)
+    at aft (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\classic.js:1140:8):8496 [2025. 12. 7. 오전 4:05:17] ERROR: ReferenceError: isKKT is not defined
+ReferenceError: isKKT is not defined
+    at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\classic.js:881:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)

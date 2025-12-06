@@ -33,6 +33,65 @@ const PREFERRED_CHAR_PROB = [0.6, 0.7, 0.8, 0.9, 1.0];
 const RIEUL_TO_NIEUN = [4449, 4450, 4457, 4460, 4462, 4467];
 const RIEUL_TO_IEUNG = [4451, 4455, 4456, 4461, 4466, 4469];
 const NIEUN_TO_IEUNG = [4455, 4461, 4466, 4469];
+const PRIORITY_ATTACK_CHARS = ["렁", "듈", "븐", "튬", "쾃", "럿", "녘", "옄", "듐", "픔", "뮴", "냑", "븀", "엌", "쁨", "탉"];
+const PRIORITY_ATTACK_CHARS_MANNER = ["릇", "윰", "킷", "륨", "눔", "낵", "럽", "늄", "슘", "럴", "텝", "슭", "녘", "줘", "픈", "탓", "쯤", "츰", "깥", "왑", "븨", "냬", "맙", "렝", "믓", "듦", "욹"];
+const PRIORITY_KAP_ATTACK_CHARS = ["넓", "앉", "깊", "된", "뾰", "짧", "덮", "꺾", "돋", "얕", "럍", "잦", "굵", "걷", "얽", "잿", "닑", "묻", "읽", "릵", "펩", "흩", "쬐", "깎", "랿", "얇", "젊", "핼", "뻗", "뜯", "씻", "얻", "쌜", "쩽", "깻", "릻", "맺", "닗", "밝", "잃", "묽", "촛", "켤", "끓", "뱌", "섣", "옮", "뗏", "쫓", "됫", "끊", "땟", "없", "쀼", "줏", "솎", "닮", "굶"];
+const PRIORITY_KAP_ATTACK_CHARS_MANNER = ["녈", "맞", "흰", "뒷", "엑", "헛", "왼", "녑", "첫", "붉", "뻐", "뉼", "쩔", "홑", "갯", "넙", "ㄹ", "퓨", "귓", "핸", "높", "롶", "랒", "윗", "핫", "받", "샌", "쌩", "늙", "륽", "엎", "빤", "녓", "뻔", "쫄", "굳", "앨", "좁", "헥", "닫", "랓", "캘", "뙤", "뺑", "맏", "섀", "샐", "롓", "옛", "ㄴ", "웬", "갠", "긁", "섞", "묶", "쨍", "밉", "잰", "헷", "쿼", "왱", "맬", "닞", "힌", "쩨", "볶"];
+var AttackCache = {};
+
+function getAttackChars(my) {
+	return new Promise(function (resolve) {
+		var state = 0;
+		if (!my.opts.injeong) state |= 1;
+		if (my.opts.strict) state |= 2;
+		if (my.opts.loanword) state |= 4;
+
+		var isRev = Const.GAME_TYPE[my.mode] == "KAP";
+		var col = isRev ? `end_${state}` : `start_${state}`;
+		var key = my.rule.lang + "_" + col;
+
+		// Cache Validity: 1 hour (or until restart)
+		if (AttackCache[key] && AttackCache[key].time > Date.now() - 3600000) {
+			return resolve(AttackCache[key].list);
+		}
+
+		// Parallel Fetch:
+		// 1. Hard Killers (<= 2)
+		// 2. Priority Soft Killers (Manual List - Mode Dependent)
+		var priorityList = isRev ? PRIORITY_KAP_ATTACK_CHARS : PRIORITY_ATTACK_CHARS;
+
+		var p1 = new Promise(function (res1) {
+			DB.kkutu_stats.find([col, { $lte: 2 }]).sort({ [col]: 1 }).limit(50).on(function (docs) {
+				res1(docs ? docs.map(d => d._id) : []);
+			}, null, () => res1([]));
+		});
+
+		var p2 = new Promise(function (res2) {
+			// Fetch stats for priority chars to check if they are valid for this mode (e.g. have non-zero count, or at least exist)
+			// Actually, even if count is high, user wants to prioritize them.
+			// But we should verify they exist in stats (valid chars).
+			DB.kkutu_stats.find(['_id', { $in: priorityList }]).on(function (docs) {
+				res2(docs ? docs.map(d => d._id) : []);
+			}, null, () => res2([]));
+		});
+
+		Promise.all([p1, p2]).then(function (results) {
+			var hardKillers = results[0];
+			var softKillers = results[1];
+
+			// Merge: Priority first, then Hard Killers (deduplicated)
+			var combined = softKillers.concat(hardKillers);
+			var unique = combined.filter((item, index) => combined.indexOf(item) === index);
+
+			AttackCache[key] = {
+				time: Date.now(),
+				list: unique
+			};
+			console.log(`[BOT] Updated Attack Cache for ${key}: ${unique.length} chars (Soft: ${softKillers.length}, Hard: ${hardKillers.length})`);
+			resolve(unique);
+		});
+	});
+}
 
 
 exports.init = function (_DB, _DIC) {
@@ -507,6 +566,130 @@ exports.readyRobot = function (robot) {
 		});
 	}
 
+	// Helper: Get characters that lead to a dead end (or very few next words)
+	var AttackCache = {}; // Cache for attack chars
+	function getAttackChars(my) {
+		return new Promise(function (resolve) {
+			var key = `${my.rule.lang}_${my.mode}_${keyByOptions(my.opts)}`;
+			if (AttackCache[key] && (Date.now() - AttackCache[key].time < 60 * 60 * 1000)) { // Cache for 1 hour
+				console.log(`[BOT] Using cached Attack Chars for ${key}`);
+				resolve(AttackCache[key].data);
+				return;
+			}
+
+			var state = 0;
+			if (!my.opts.injeong) state |= 1;
+			if (my.opts.strict) state |= 2;
+			if (my.opts.loanword) state |= 4;
+
+			var col = isRev ? `start_${state}` : `end_${state}`;
+
+			// Parallel Fetch:
+			// 1. Hard Killers (<= 3) - Fetched from DB
+			// 2. Priority Lists (Hard + Soft)
+
+			// Determine Manual Lists based on Mode
+			var hardList = isRev ? PRIORITY_KAP_ATTACK_CHARS : PRIORITY_ATTACK_CHARS;
+			var softList = isRev ? PRIORITY_KAP_ATTACK_CHARS_MANNER : PRIORITY_ATTACK_CHARS_MANNER;
+
+			// If Manner Mode: Hard List is invalid/unsafe (One-shots), so we ignore it or Treat it as "Don't Use".
+			// Actually, we just won't add it to Tier 1.
+
+			var fetchList = hardList.concat(softList);
+
+			var p1 = new Promise(function (res1) {
+				// Increase limit to cover ALL killers <= 3
+				DB.kkutu_stats.find([col, { $lte: 3 }]).sort({ [col]: 1 }).limit(3000).on(function (docs) {
+					res1(docs || []);
+				}, null, () => res1([]));
+			});
+
+			var p2 = new Promise(function (res2) {
+				DB.kkutu_stats.find(['_id', { $in: fetchList }]).on(function (docs) {
+					res2(docs || []);
+				}, null, () => res2([]));
+			});
+
+			Promise.all([p1, p2]).then(function (results) {
+				var statsDocs = results[0];
+				var priorityDocs = results[1];
+
+				var t1Set = new Set(); // Hard / One-shots
+				var t2Set = new Set(); // Soft / Multi-shots
+
+				// Sets for quick lookup of manual priorities
+				var manualHard = new Set(hardList);
+				var manualSoft = new Set(softList);
+
+				// Process Manual Priority Chars (From DB Result to ensure validity, or Raw)
+				// User wants these priority chars to be used.
+				// We trust the manual list, but verifying existence via 'priorityDocs' is safer?
+				// For now, let's add them if they appear in priorityDocs OR if they are just in the list.
+				// Actually, if we add them blindly, we might try to attack with a char that doesn't exist.
+				// 'priorityDocs' contains the stats for them. 
+
+				// Helper to decide where a char goes
+				function classify(char, count) {
+					// Manner Mode Filter: NO One-Shots (Count 0) allowed in ANY Tier.
+					if (my.opts.manner && count === 0) return;
+
+					// Tier 1: One-shots (Count 0) OR Manual Hard Priority
+					// If Manner Mode, Tier 1 should be EMPTY (or at least no one-shots).
+					// User said: "Manner constants are Tier 2... Tier 1 is one-shot so can't use."
+					// So if Manner Mode, We SKIP Tier 1 assignment entirely? 
+					// Or we just put everything allowed into Tier 2?
+					// Let's implement: If Manner, Tier 1 is disabled. All allowed chars go to Tier 2.
+
+					if (my.opts.manner) {
+						// Only allow Softs and Count >= 1
+						if (count > 0) t2Set.add(char);
+						return;
+					}
+
+					// Normal Mode logic
+					if (manualHard.has(char) || count === 0) {
+						t1Set.add(char);
+					} else {
+						// Count 1-3 OR Manual Soft
+						t2Set.add(char);
+					}
+				}
+
+				// Map docs to a Map for easy merging
+				var charMap = new Map();
+
+				// Priority docs first
+				priorityDocs.forEach(d => charMap.set(d._id, d[col]));
+
+				// Stats docs (might overlap)
+				statsDocs.forEach(d => {
+					if (!charMap.has(d._id)) charMap.set(d._id, d[col]);
+				});
+
+				// Now classify
+				charMap.forEach((count, char) => {
+					classify(char, count);
+				});
+
+				// Also ensure Manual Softs are in T2 if missed by DB (rare, but if stats missing?)
+				// If stats missing, we don't know count. Safer to skip or assume safe?
+				// Assuming DB covers everything.
+
+				var t1List = Array.from(t1Set);
+				var t2List = Array.from(t2Set);
+
+				var data = { tier1: t1List, tier2: t2List };
+
+				AttackCache[key] = {
+					time: Date.now(),
+					data: data
+				};
+				console.log(`[BOT] Updated Attack Cache for ${key}: Tier1=${t1List.length}, Tier2=${t2List.length} (Manner:${my.opts.manner})`);
+				resolve(data);
+			});
+		});
+	}
+
 	if (my.opts.unknown) {
 		var gen = "";
 		var len;
@@ -647,14 +830,6 @@ exports.readyRobot = function (robot) {
 					if (patterns.length > 0) {
 						if (isRev) {
 							// KAP: Matches Tail (adc)
-							regex = `^(${patterns.join('|')})(${adc})$`;
-							// Wait, patterns define the whole word structure (dots).
-							// If pattern is `.{2}P.{3}`, it describes a 6-letter word.
-							// We need to enforce `adc` at the end (KAP) or start (Standard).
-							// Regex must satisfy BOTH: "Matches Pattern" AND "Starts/Ends with adc".
-							// Using Lookahead is best.
-
-							// KAP: Ends with adc.
 							regex = `^(?=.*(${adc})$)(${patterns.join('|')})$`;
 						} else {
 							// Standard: Starts with adc.
@@ -743,9 +918,16 @@ exports.readyRobot = function (robot) {
 			var prob = PERSONALITY_CONST[level] * Math.abs(effPersonality);
 			console.log(`[BOT] Priority 2 (Personality): Roll=${roll.toFixed(3)}, Prob=${prob.toFixed(3)}`);
 			if (roll < prob) {
-				if (effPersonality > 0) strategy = "ATTACK";
+				// Prevent Attack on First Turn UNLESS Manner mode is ON (User Request)
+				// NOW: User wants "Manner Attack" (Tier 2) on first turn even in Normal Mode.
+				// So we allow ATTACK always, but enforce fairness in executeStrategy.
+				var allowAttack = true;
+
+				if (effPersonality > 0 && allowAttack) strategy = "ATTACK";
 				else if (effPersonality < 0 && !isKKT) strategy = "LONG";
-				decided = true;
+				else strategy = "NORMAL"; // Fallback if Attack is blocked or conditions met
+
+				if (strategy !== "NORMAL") decided = true;
 			}
 		}
 
@@ -753,13 +935,17 @@ exports.readyRobot = function (robot) {
 		if (!decided && level >= 2) {
 			var roll = Math.random();
 			var prob = SPECIAL_MOVE_PROB[level];
-			console.log(`[BOT] Priority 3 (Special Move): Roll=${roll.toFixed(3)}, Prob=${prob.toFixed(3)}`);
+			console.log(`[BOT] Priority 3 (Special Move): Roll=${prob.toFixed(3)}, Prob=${prob.toFixed(3)}`);
 			if (roll < prob) {
+				var allowAttack = true;
+
 				// Special Move Triggered
-				if (isKKT) strategy = "ATTACK";
+				if (isKKT && allowAttack) strategy = "ATTACK";
 				else {
 					// For non-KKT, pick randomly between ATTACK and LONG
-					strategy = Math.random() < 0.5 ? "ATTACK" : "LONG";
+					// Also check first turn for Attack
+					if (Math.random() < 0.5 && allowAttack) strategy = "ATTACK";
+					else strategy = "LONG";
 				}
 			} else {
 				// Normal Strategy
@@ -772,6 +958,7 @@ exports.readyRobot = function (robot) {
 	}
 
 	function executeStrategy(strategy) {
+		var isKKT = (Const.GAME_TYPE[my.mode] == "KKT" || Const.GAME_TYPE[my.mode] == "EKK");
 		var limitMultiplier = 1;
 		if (strategy === "ATTACK" || strategy === "LONG") limitMultiplier = 4; // Fetch 4x for advanced selection (2x Freq + 2x Random)
 
@@ -806,51 +993,105 @@ exports.readyRobot = function (robot) {
 					pickList(shuffle(top)); // Pick randomly from top 30
 
 				} else if (strategy === "ATTACK") {
-					// 2x Frequency + 2x Random logic
-					list.sort(function (a, b) { return b.hit - a.hit; }); // Hit DESC (Frequency)
+					// Optimized Attack Strategy: Tiered Reverse Search
+					// Tier 1: Priority + One-shots (Count 0)
+					// Tier 2: Soft Killers (Count 1-3)
 
-					var limit = ROBOT_CANDIDATE_LIMIT[level];
-					var freqPool = list.slice(0, limit * 2);
-					var restPool = list.slice(limit * 2);
-					var randomPool = shuffle(restPool).slice(0, limit * 2);
+					getAttackChars(my).then(function (tiers) {
+						var tier1 = tiers.tier1 || [];
+						var tier2 = tiers.tier2 || [];
 
-					var combined = freqPool.concat(randomPool);
-					// Deduplicate
-					combined = combined.filter((item, index) => combined.indexOf(item) === index);
-
-					// Analyze Next Word Counts for top candidates
-					// Check top 15 candidates from the combined pool
-					var checkList = combined.slice(0, 15);
-
-					console.log(`[BOT] Analyzing ${checkList.length} candidates for Attack...`);
-
-					var promises = checkList.map(function (w) {
-						var endChar = getChar.call(my, w._id);
-						return countNextWords(endChar).then(function (count) {
-							w.nextCount = count;
-							return w;
-						});
-					});
-
-					Promise.all(promises).then(function (results) {
-						// Sort PURELY by nextCount ASC (Fewest next words = Best Attack)
-						results.sort(function (a, b) { return a.nextCount - b.nextCount; });
-
-						if (results.length > 0) {
-							console.log(`[BOT] Top Attack Candidate: ${results[0]._id} (Next: ${results[0].nextCount})`);
-							// Pick the absolute best (or top few?)
-							// For strict attack, picking top 1 is best.
-							// But to populate candidates for retry, we should pass all 'results'.
-							pickList(results);
-						} else {
-							if (strategy !== "NORMAL") {
-								console.log(`[BOT] Attack analysis yielded no results, falling back to NORMAL`);
-								executeStrategy("NORMAL");
-							} else {
-								denied();
+						// Helper to perform attack search
+						function tryAttack(killers, nextStepCallback) {
+							if (!killers || killers.length === 0) {
+								nextStepCallback();
+								return;
 							}
+
+							// Construct Regex for this batch
+							var killerString = killers.join("").replace(/[\[\]\^\-\\]/g, "\\$&");
+							var adc = my.game.char + (my.game.subChar ? ("|" + my.game.subChar) : "");
+
+							var middlePattern = ".*";
+							if (my.game.wordLength) {
+								var midLen = Math.max(0, my.game.wordLength - 2);
+								middlePattern = `.{${midLen}}`;
+							}
+
+							var regex;
+							if (isRev) {
+								regex = `^[${killerString}]${middlePattern}(${adc})$`;
+							} else {
+								regex = `^(${adc})${middlePattern}[${killerString}]$`;
+							}
+
+							console.log(`[BOT] ATTACK: Trying Tier with ${killers.length} chars...`);
+
+							var query = [['_id', new RegExp(regex)]];
+							var flagMask = 0;
+
+							if (my.rule.lang == "ko") {
+								if (!my.opts.injeong) flagMask |= Const.KOR_FLAG.INJEONG;
+								if (my.opts.loanword) flagMask |= Const.KOR_FLAG.LOANWORD;
+								if (my.opts.strict) {
+									flagMask |= (Const.KOR_FLAG.SPACED | Const.KOR_FLAG.SATURI | Const.KOR_FLAG.OLD | Const.KOR_FLAG.MUNHWA);
+									query.push(['type', Const.KOR_STRICT]);
+								} else {
+									query.push(['type', Const.KOR_GROUP]);
+								}
+								if (flagMask > 0) query.push(['flag', { '$nand': flagMask }]);
+							} else {
+								query.push(['_id', Const.ENG_ID]);
+							}
+
+							DB.kkutu[my.rule.lang].find(...query).limit(50).on(function (list) {
+								if (list && list.length) {
+									list = list.filter(function (w) {
+										return w._id.length <= ROBOT_LENGTH_LIMIT[level] && !robot._done.includes(w._id);
+									});
+
+									if (list.length > 0) {
+										console.log(`[BOT] ATTACK Success: Found ${list.length} words.`);
+										pickList(shuffle(list));
+									} else {
+										nextStepCallback();
+									}
+								} else {
+									nextStepCallback();
+								}
+							});
+						}
+
+						// Execution Flow: Tier 1 -> Tier 2 -> Normal
+						// Logic:
+						// If First Turn (Chain 0): SKIP Tier 1. Go to Tier 2.
+						// If Normal Turn: Start Tier 1.
+
+						var startTier1 = true;
+						if (my.game.chain.length === 0) {
+							console.log("[BOT] First Turn detected. Skipping Tier 1 (Hard Attack) for polite start.");
+							startTier1 = false;
+						}
+
+						if (startTier1) {
+							tryAttack(tier1, function () {
+								console.log("[BOT] Tier 1 failed, trying Tier 2...");
+								tryAttack(tier2, function () {
+									console.log("[BOT] Tier 2 failed, falling back to NORMAL.");
+									executeStrategy("NORMAL");
+								});
+							});
+						} else {
+							// Skip Tier 1, Start at Tier 2
+							tryAttack(tier2, function () {
+								console.log("[BOT] Tier 2 failed (First Turn), falling back to NORMAL.");
+								executeStrategy("NORMAL");
+							});
 						}
 					});
+
+
+
 
 				} else {
 					// NORMAL strategy

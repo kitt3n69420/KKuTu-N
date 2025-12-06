@@ -10,6 +10,11 @@ var NIEUN_TO_IEUNG = [4455, 4461, 4466, 4469];
     Populates kkutu_stats table with pre-calculated word counts.
     Columns: start_0..7, end_0..7
     Index Bits: (NoLoanword << 2) | (Strict << 1) | (NoInjeong << 0)
+    
+    Logic Update:
+    - Exclude 1-letter words.
+    - Start Stats: Include Origins (Reverse Dueum).
+    - End Stats: Include Targets (Forward Dueum).
 */
 
 DB.ready = function () {
@@ -34,17 +39,29 @@ function populateStats() {
             var flag = word.flag || 0;
             var type = word.type || "";
 
+            // Exclude single character words
+            if (w.length <= 1) return;
+
             // Determine Word Properties
             var isInjeong = (flag & Const.KOR_FLAG.INJEONG) ? true : false;
             var isLoan = (flag & Const.KOR_FLAG.LOANWORD) ? true : false;
             var isStrict = (type.match(Const.KOR_STRICT) && flag < 4) ? true : false;
-            // Strict Definition from classic.js: (!type.match(Const.KOR_STRICT) || flag >= 4) -> Denied
-            // So Valid Strict = Match Strict AND Flag < 4.
 
             // Get Start and End Chars
             var startChar = w.charAt(0);
-            var endChars = getReverseDueumChars(w.charAt(w.length - 1));
-            endChars.push(w.charAt(w.length - 1)); // Include original tail
+
+            // Start Stats: Word starts with 'C'.
+            // Include 'C' + Any Origin that converts to 'C'.
+            // Example: '이' -> Include '이', '리', '니'.
+            var startOriginList = getReverseDueumChars(startChar);
+            startOriginList.push(startChar);
+
+            // End Stats: Word ends with 'C' (Tail).
+            // Include 'C' + Any Target that 'C' converts to.
+            // Example: '리' -> Include '리', '이'.
+            var endTarget = getSubChar(w.charAt(w.length - 1));
+            var endList = [w.charAt(w.length - 1)];
+            if (endTarget && endTarget !== w.charAt(w.length - 1)) endList.push(endTarget);
 
             // Update Stats for each of the 8 States
             for (var state = 0; state < 8; state++) {
@@ -59,26 +76,14 @@ function populateStats() {
 
                 if (valid) {
                     // Start Update
-                    if (!stats[startChar]) stats[startChar] = { start: [0, 0, 0, 0, 0, 0, 0, 0], end: [0, 0, 0, 0, 0, 0, 0, 0] };
-                    stats[startChar].start[state]++;
+                    startOriginList.forEach(function (sc) {
+                        if (!stats[sc]) stats[sc] = { start: [0, 0, 0, 0, 0, 0, 0, 0], end: [0, 0, 0, 0, 0, 0, 0, 0] };
+                        stats[sc].start[state]++;
+                    });
 
-                    // End Update (handle potential multi-tail due to Reverse Dueum in KAP)
-                    // Note: In standard game, we just check if Head matches tail.
-                    // But for KAP (Reverse), Bot attacks with HEAD, Opponent matches TAIL.
-                    // So "End Count" here represents "How many words END with this char?" (Normal Game next word count)
-                    // Actually, wait.
-                    // CountNextWords logic:
-                    // Normal Game (Bot attacks with Tail): Count words STARTING with Tail. -> Query 'start_X' of Tail.
-                    // KAP Game (Bot attacks with Head): Count words ENDING with (Head or RevDueum(Head)). -> Query 'end_X' of Head.
-
-                    endChars.forEach(function (ec) {
+                    // End Update
+                    endList.forEach(function (ec) {
                         if (!stats[ec]) stats[ec] = { start: [0, 0, 0, 0, 0, 0, 0, 0], end: [0, 0, 0, 0, 0, 0, 0, 0] };
-                        // Avoid double counting if Reverse Dueum result is same as original (unlikely but safe)
-                        // Actually endChars includes original.
-                        // Stats structure: Key is the 'query char'.
-                        // If I have word '기러기', it ends in '기'. 
-                        // Someone attacking with '기' in KAP needs to find words ending in '기'.
-                        // So '기' end_count increments.
                         stats[ec].end[state]++;
                     });
                 }
@@ -94,20 +99,6 @@ function saveStats(stats) {
     var keys = Object.keys(stats);
     var total = keys.length;
     var current = 0;
-
-    // Chunking to avoid overwhelming DB? 
-    // Or just one by one. There are about 2000-3000 distinct chars maybe? 11172 max.
-    // Let's optimize by creating table first if not exists. 
-
-    // We assume table exists from db.js definition, but columns might not match if we just did 'new Table'.
-    // `collection.js` doesn't auto-create schema. We might need to CREATE TABLE manually or assume `db.sql` handles it?
-    // User said "Initialize KKuTu Database" before, `db.sql` was executed.
-    // `kkutu_stats` is NEW. It probably doesn't verify schema in `db.js`.
-    // I should create the table using raw query if possible, or just rely on 'upsert' if table exists.
-    // Wait, `collection.js` `upsert` does `INSERT ... ON CONFLICT DO UPDATE`. 
-    // If table doesn't exist, it will fail.
-
-    // I'll add a check to create table if not exists.
 
     var createTableQuery = `
         CREATE TABLE IF NOT EXISTS kkutu_stats (
@@ -127,7 +118,6 @@ function saveStats(stats) {
 
         console.log("Table verified throughout. Inserting data...");
 
-        // Use Promise loop for sequence or Parallel? Parallel is faster.
         var promises = keys.map(function (key) {
             return new Promise(function (resolve, reject) {
                 var d = stats[key];
@@ -144,7 +134,7 @@ function saveStats(stats) {
                     resolve();
                 }, null, function (err) {
                     console.error(`Error saving ${key}:`, err);
-                    resolve(); // Continue even if error
+                    resolve();
                 });
             });
         });
@@ -156,6 +146,35 @@ function saveStats(stats) {
     });
 }
 
+function getSubChar(char) {
+    if (!char) return null;
+    var r;
+    var c = char.charCodeAt();
+    var k;
+    var ca, cb, cc;
+
+    k = c - 0xAC00;
+    if (k < 0 || k > 11171) return null;
+    ca = [Math.floor(k / 28 / 21), Math.floor(k / 28) % 21, k % 28];
+    cb = [ca[0] + 0x1100, ca[1] + 0x1161, ca[2] + 0x11A7];
+    cc = false;
+    if (cb[0] == 4357) { // ㄹ에서 ㄴ, ㅇ
+        cc = true;
+        if (RIEUL_TO_NIEUN.includes(cb[1])) cb[0] = 4354;
+        else if (RIEUL_TO_IEUNG.includes(cb[1])) cb[0] = 4363;
+        else cc = false;
+    } else if (cb[0] == 4354) { // ㄴ에서 ㅇ
+        if (NIEUN_TO_IEUNG.indexOf(cb[1]) != -1) {
+            cb[0] = 4363;
+            cc = true;
+        }
+    }
+    if (cc) {
+        cb[0] -= 0x1100; cb[1] -= 0x1161; cb[2] -= 0x11A7;
+        r = String.fromCharCode(((cb[0] * 21) + cb[1]) * 28 + cb[2] + 0xAC00);
+    }
+    return r;
+}
 
 function getReverseDueumChars(char) {
     if (!char) return [];
