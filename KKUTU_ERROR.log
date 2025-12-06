@@ -1,0 +1,325 @@
+This is an error log file of the game server.
+You may use like `tail -f KKUTU_ERROR.log` to watch this.
+:8496 [2025. 11. 26. 오전 12:51:01] ERROR: TypeError: Cannot read properties of undefined (reading 'mean')
+TypeError: Cannot read properties of undefined (reading 'mean')
+    at approved (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\classic.js:251:17)
+    at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\classic.js:268:12
+    at exports.Tail.go (C:\myKKuTu\KKuTu-master\Server\lib\sub\lizard.js:43:16)
+    at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\classic.js:496:11
+    at callback (C:\myKKuTu\KKuTu-master\Server\lib\sub\collection.js:316:13)
+    at Query.preCB (C:\myKKuTu\KKuTu-master\Server\lib\sub\collection.js:298:6)
+    at Query.handleReadyForQuery (C:\myKKuTu\KKuTu-master\Server\lib\node_modules\pg\lib\query.js:138:12)
+    at Client._handleReadyForQuery (C:\myKKuTu\KKuTu-master\Server\lib\node_modules\pg\lib\client.js:290:19)
+    at Connection.emit (node:events:518:28)
+    at C:\myKKuTu\KKuTu-master\Server\lib\node_modules\pg\lib\connection.js:114:12:8496 [2025. 12. 5. 오후 12:52:27] ERROR: TypeError: Cannot read properties of undefined (reading 'includes')
+TypeError: Cannot read properties of undefined (reading 'includes')
+    at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\daneo.js:251:71
+    at Array.filter (<anonymous>)
+    at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\daneo.js:250:17
+    at exports.Tail.go (C:\myKKuTu\KKuTu-master\Server\lib\sub\lizard.js:43:16)
+    at aft (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\daneo.js:338:7)
+    at callback (C:\myKKuTu\KKuTu-master\Server\lib\sub\collection.js:316:13)
+    at Query.preCB (C:\myKKuTu\KKuTu-master\Server\lib\sub\collection.js:298:6)
+    at Query.handleReadyForQuery (C:\myKKuTu\KKuTu-master\Server\lib\node_modules\pg\lib\query.js:138:12)
+    at Client._handleReadyForQuery (C:\myKKuTu\KKuTu-master\Server\lib\node_modules\pg\lib\client.js:290:19)
+    at Connection.emit (node:events:518:28):8496 [2025. 12. 5. 오후 12:53:13] ERROR: TypeError: Cannot read properties of undefined (reading 'includes')
+TypeError: Cannot read properties of undefined (reading 'includes')
+    at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\daneo.js:251:71
+    at Array.filter (<anonymous>)
+    at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\daneo.js:250:17
+    at exports.Tail.go (C:\myKKuTu\KKuTu-master\Server\lib\sub\lizard.js:43:16)
+    at aft (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\daneo.js:338:7)
+    at callback (C:\myKKuTu\KKuTu-master\Server\lib\sub\collection.js:316:13)
+    at Query.preCB (C:\myKKuTu\KKuTu-master\Server\lib\sub\collection.js:298:6)
+    at Query.handleReadyForQuery (C:\myKKuTu\KKuTu-master\Server\lib\node_modules\pg\lib\query.js:138:12)
+    at Client._handleReadyForQuery (C:\myKKuTu\KKuTu-master\Server\lib\node_modules\pg\lib\client.js:290:19)
+    at Connection.emit (node:events:518:28):8496 [2025. 12. 5. 오후 4:03:40] ERROR: Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at require (node:internal/modules/helpers:135:16)
+    at exports.init (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:61:13)
+    at MainDB.ready (C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js:103:8):8496 [2025. 12. 5. 오후 4:03:50] ERROR: Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at require (node:internal/modules/helpers:135:16)
+    at exports.init (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:61:13)
+    at MainDB.ready (C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js:103:8):8496 [2025. 12. 5. 오후 4:04:01] ERROR: Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at require (node:internal/modules/helpers:135:16)
+    at exports.init (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:61:13)
+    at MainDB.ready (C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js:103:8):8496 [2025. 12. 5. 오후 4:04:11] ERROR: Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at require (node:internal/modules/helpers:135:16)
+    at exports.init (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:61:13)
+    at MainDB.ready (C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js:103:8):8496 [2025. 12. 5. 오후 4:04:21] ERROR: Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at require (node:internal/modules/helpers:135:16)
+    at exports.init (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:61:13)
+    at MainDB.ready (C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js:103:8):8496 [2025. 12. 5. 오후 4:04:32] ERROR: Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at require (node:internal/modules/helpers:135:16)
+    at exports.init (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:61:13)
+    at MainDB.ready (C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js:103:8):8496 [2025. 12. 5. 오후 4:04:42] ERROR: Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at require (node:internal/modules/helpers:135:16)
+    at exports.init (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:61:13)
+    at MainDB.ready (C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js:103:8):8496 [2025. 12. 5. 오후 4:04:53] ERROR: Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at require (node:internal/modules/helpers:135:16)
+    at exports.init (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:61:13)
+    at MainDB.ready (C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js:103:8):8496 [2025. 12. 5. 오후 4:05:03] ERROR: Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at require (node:internal/modules/helpers:135:16)
+    at exports.init (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:61:13)
+    at MainDB.ready (C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js:103:8):8496 [2025. 12. 5. 오후 4:05:14] ERROR: Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at require (node:internal/modules/helpers:135:16)
+    at exports.init (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:61:13)
+    at MainDB.ready (C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js:103:8):8496 [2025. 12. 5. 오후 4:05:24] ERROR: Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+Error: Cannot find module './games/free'
+Require stack:
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\master.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js
+- C:\myKKuTu\KKuTu-master\Server\lib\Game\cluster.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.require (node:internal/modules/cjs/loader:1487:12)
+    at require (node:internal/modules/helpers:135:16)
+    at exports.init (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:61:13)
+    at MainDB.ready (C:\myKKuTu\KKuTu-master\Server\lib\Game\slave.js:103:8):8496 [2025. 12. 5. 오후 10:52:13] ERROR: TypeError: my.playRobot is not a function
+TypeError: my.playRobot is not a function
+    at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:110:19
+    at exports.Room.traverse (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:43:3)
+    at exports.turnStart (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:105:11)
+    at my.route.my.routeSync (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1444:13)
+    at my.turnStart [as _onTimeout] (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1378:13)
+    at listOnTimeout (node:internal/timers:588:17)
+    at process.processTimers (node:internal/timers:523:7):8496 [2025. 12. 5. 오후 10:52:49] ERROR: TypeError: my.playRobot is not a function
+TypeError: my.playRobot is not a function
+    at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:110:19
+    at exports.Room.traverse (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:43:3)
+    at exports.turnStart (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:105:11)
+    at my.route.my.routeSync (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1444:13)
+    at my.turnStart [as _onTimeout] (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1378:13)
+    at listOnTimeout (node:internal/timers:588:17)
+    at process.processTimers (node:internal/timers:523:7):8496 [2025. 12. 5. 오후 11:09:48] ERROR: TypeError: Cannot read properties of undefined (reading '77')
+TypeError: Cannot read properties of undefined (reading '77')
+    at exports.submit (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:143:19)
+    at my.route.my.routeSync (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1444:13)
+    at my.submit (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1413:13)
+    at Timeout._onTimeout (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:226:6)
+    at listOnTimeout (node:internal/timers:588:17)
+    at process.processTimers (node:internal/timers:523:7):8496 [2025. 12. 5. 오후 11:09:48] ERROR: TypeError: Cannot read properties of undefined (reading '77')
+TypeError: Cannot read properties of undefined (reading '77')
+    at exports.submit (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:143:19)
+    at my.route.my.routeSync (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1444:13)
+    at my.submit (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1413:13)
+    at Timeout._onTimeout (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:226:6)
+    at listOnTimeout (node:internal/timers:588:17)
+    at process.processTimers (node:internal/timers:523:7):8496 [2025. 12. 5. 오후 11:09:48] ERROR: TypeError: Cannot read properties of undefined (reading '77')
+TypeError: Cannot read properties of undefined (reading '77')
+    at exports.submit (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:143:19)
+    at my.route.my.routeSync (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1444:13)
+    at my.submit (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1413:13)
+    at Timeout._onTimeout (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:226:6)
+    at listOnTimeout (node:internal/timers:588:17)
+    at process.processTimers (node:internal/timers:523:7):8496 [2025. 12. 5. 오후 11:11:57] ERROR: TypeError: Cannot read properties of undefined (reading '15')
+TypeError: Cannot read properties of undefined (reading '15')
+    at exports.submit (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:143:19)
+    at my.route.my.routeSync (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1444:13)
+    at my.submit (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1413:13)
+    at Timeout._onTimeout (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:226:6)
+    at listOnTimeout (node:internal/timers:588:17)
+    at process.processTimers (node:internal/timers:523:7):8496 [2025. 12. 5. 오후 11:11:57] ERROR: TypeError: Cannot read properties of undefined (reading '15')
+TypeError: Cannot read properties of undefined (reading '15')
+    at exports.submit (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:143:19)
+    at my.route.my.routeSync (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1444:13)
+    at my.submit (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1413:13)
+    at Timeout._onTimeout (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:226:6)
+    at listOnTimeout (node:internal/timers:588:17)
+    at process.processTimers (node:internal/timers:523:7):8496 [2025. 12. 5. 오후 11:11:57] ERROR: TypeError: Cannot read properties of undefined (reading '15')
+TypeError: Cannot read properties of undefined (reading '15')
+    at exports.submit (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:143:19)
+    at my.route.my.routeSync (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1444:13)
+    at my.submit (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:1413:13)
+    at Timeout._onTimeout (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\typing.js:226:6)
+    at listOnTimeout (node:internal/timers:588:17)
+    at process.processTimers (node:internal/timers:523:7)

@@ -1,0 +1,339 @@
+<html>
+
+<head>
+	<title>끄투엔 공지사항</title>
+	<style>
+		:root {
+			--primary-color: #2196F3;
+			/* Blue - Change to #FFC107 for Yellow */
+			--primary-dark: #1976D2;
+			/* Dark Blue - Change to #FFA000 for Yellow */
+			--accent-color: #E3F2FD;
+			/* Light Blue - Change to #FFF8E1 for Yellow */
+			--text-color: #333;
+			--bg-color: #f5f5f5;
+		}
+
+		body {
+			font-family: 'NaumBarunGothic', 'Malgun Gothic', 'Dotum', sans-serif;
+			background-color: var(--bg-color);
+			margin: 0;
+			padding: 20px;
+			color: var(--text-color);
+		}
+
+		h2 {
+			margin-bottom: 20px;
+			color: var(--primary-dark);
+			border-left: 5px solid var(--primary-color);
+			padding-left: 10px;
+		}
+
+		.update-card {
+			background: white;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			padding: 20px;
+			margin-bottom: 20px;
+			transition: transform 0.2s;
+		}
+
+		.update-card:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+		}
+
+		h3.version-title {
+			margin-top: 0;
+			margin-bottom: 15px;
+			padding-bottom: 10px;
+			border-bottom: 2px solid var(--accent-color);
+			color: var(--primary-color);
+			font-size: 1.2em;
+			display: flex;
+			align-items: center;
+		}
+
+		h3.version-title::before {
+			content: '🚀';
+			margin-right: 8px;
+			font-size: 0.9em;
+		}
+
+		ul {
+			list-style-type: none;
+			padding-left: 0;
+		}
+
+		li {
+			position: relative;
+			padding-left: 20px;
+			margin-bottom: 8px;
+			line-height: 1.5;
+			font-size: 14px;
+		}
+
+		li::before {
+			content: '•';
+			color: var(--primary-color);
+			font-weight: bold;
+			position: absolute;
+			left: 0;
+			font-size: 1.2em;
+			line-height: 1.2;
+		}
+
+		/* Example of a tag if needed */
+		.tag {
+			display: inline-block;
+			background: var(--accent-color);
+			color: var(--primary-dark);
+			padding: 2px 8px;
+			border-radius: 12px;
+			font-size: 0.8em;
+			margin-left: 10px;
+		}
+
+		/* Tabs Styling */
+		.tabs {
+			overflow: hidden;
+			background-color: transparent;
+			margin-bottom: 20px;
+			border-bottom: 2px solid var(--primary-color);
+		}
+
+		.tab-btn {
+			background-color: transparent;
+			float: left;
+			border: none;
+			outline: none;
+			cursor: pointer;
+			padding: 10px 20px;
+			transition: 0.3s;
+			font-size: 15px;
+			font-weight: bold;
+			color: #555;
+			border-radius: 10px 10px 0 0;
+			margin-right: 5px;
+		}
+
+		.tab-btn:hover {
+			background-color: rgba(33, 150, 243, 0.1);
+			color: var(--primary-color);
+		}
+
+		.tab-btn.active {
+			background-color: var(--primary-color);
+			color: white;
+		}
+
+		.tab-content {
+			display: none;
+			animation: fadeEffect 0.5s;
+		}
+
+		@keyframes fadeEffect {
+			from {
+				opacity: 0;
+			}
+
+			to {
+				opacity: 1;
+			}
+		}
+	</style>
+
+</head>
+
+<body>
+	<div class="tabs">
+		<button class="tab-btn active" onclick="openTab(event, 'updates')">업데이트 로그</button>
+		<button class="tab-btn" onclick="openTab(event, 'issues')">알려진 문제</button>
+		<button class="tab-btn" onclick="openTab(event, 'plans')">추가 예정 기능</button>
+	</div>
+	<div id="updates" class="tab-content" style="display: block;">
+		<div class="update-card">
+			<h3 class="version-title">N0.2.1 [251207] <span class="tag">New</span></h3>
+			<ul>
+				<li>표준국어대사전과 우리말샘에서 단어 데이터를 가져왔습니다.</li>
+				<li>이제 언노운 위드와 매너를 같이 썼을 때 자음이나 모음으로 끝나는 단어도 정상적으로 입력됩니다.</li>
+			</ul>
+		</div>
+		<div class="update-card">
+			<h3 class="version-title">N0.2.0 [251206]</h3>
+			<ul>
+				<li>페이지와 UI를 새단장하고 테마를 바꿨습니다.</li>
+				<li>도움말을 추가했습니다.</li>
+				<li>이제 봇이 선호 글자를 쓸 때 다음에 이어야 할 글자를 제대로 고려합니다.</li>
+				<li>봇 이름이 너무 길어지는 것을 막았습니다.</li>
+			</ul>
+		</div>
+		<div class="update-card">
+			<h3 class="version-title">N0.1.2 [251205]</h3>
+			<ul>
+				<li>타자 대결에 '한방' 규칙이 추가되었습니다. 단어를 잘못 입력하면 그 라운드에서 더 이상 단어를 입력할 수 없습니다.</li>
+				<li>이제 타자 대결에서 봇을 사용할 수 있습니다.</li>
+				<li>타자 대결에 '장문' 규칙이 추가되었습니다. 2~5글자 대신 9~13글자의 장문이 등장합니다.</li>
+				<li>도움말을 업데이트했습니다.</li>
+			</ul>
+		</div>
+		<div class="update-card">
+			<h3 class="version-title">N0.1.1 [251205]</h3>
+			<ul>
+				<li>모바일 UI에 일반 UI의 변경점이 적용되었습니다.</li>
+				<li>봇의 성격을 설정하는 기능이 추가되었습니다. 공격 위주~균형~장문 위주로 선책할 수 있습니다.</li>
+				<li>봇의 선호 글자가 추가되었습니다. 봇이 최대한 그 글자를 주려고 노력합니다.</li>
+				<li>디스코드 로그인이 추가되었습니다.</li>
+			</ul>
+		</div>
+		<div class="update-card">
+			<h3 class="version-title">N0.1.0 [251203]</h3>
+			<ul>
+				<li>외부에서 서버로의 접속이 가능해졌습니다.</li>
+				<li>이제 서버가 https 연결을 지원합니다.</li>
+				<li>이제 세컨드 규칙이 제대로 작동합니다.</li>
+			</ul>
+		</div>
+		<div class="update-card">
+			<h3 class="version-title">N0.0.6a [251203]</h3>
+			<ul>
+				<li>이제 다른 플레이어나 봇이 게임 오버를 당하면,
+					봇들이 위로(?) 메시지를 보냅니다.</li>
+				<li>레벨 아이콘이 바뀌었습니다.</li>
+			</ul>
+		</div>
+		<div class="update-card">
+			<h3 class="version-title">N0.0.6 [251202]</h3>
+			<ul>
+				<li>이제 봇이 공격 단어를 보낼 때,
+					다음에 이을 글자가 뭔지 따집니다.</li>
+				<li>이제 봇이 한방 단어를 주거나 받으면 메시지를 보냅니다.</li>
+				<li>게임모드의 설명이 실제 게임모드와 맞지 않는 현상을 수정하였습니다.</li>
+				<li>자음퀴즈에 '모음' 규칙이 추가되었습니다. 자음 대신에 모음이 나옵니다. 어려우니 조심하세요 !</li>
+				<li>이제 끄투 봇이 각자 개성 있는 이름과 복장을 가지고 나옵니다.</li>
+			</ul>
+		</div>
+		<div class="update-card">
+			<h3 class="version-title">N0.0.5 [251201]</h3>
+			<ul>
+				<li>영어 끄투 모드에서 가온잇기 및 세컨드 규칙이 오작동하는 버그를 수정하였습니다.</li>
+				<li>이제 언노운 워드에서 이을 글자가 유효한 글자인지 확인됩니다.</li>
+				<li>이제 매너가 없으면 언노운 워드에서 글자 체크를 하지 않습니다. 한자나 특수문자로 다음 사람을 당황시켜 보세요 !</li>
+				<li>쿵쿵따의 3232 규칙이 좀 더 공평하게 변경되었습니다. 짝수인 경우 참가자 수+1의 주기로 3과 2가 반복되게 됩니다.</li>
+				<li>봇 로직이 변경되었습니다. 이제 끄투 봇이 입력에 실패한다 해도 가능한 경우 항상 다시 입력을 시도합니다.</li>
+			</ul>
+		</div>
+		<div class="update-card">
+			<h3 class="version-title">N0.0.4 [251129]</h3>
+			<ul>
+				<li>'영어 쿵쿵따' 모드가 추가되었습니다. 영어 끝말잇기와 비슷하지만,
+					5글자 단어만 사용할 수 있습니다.</li>
+				<li>'가온잇기' 규칙이 추가되었습니다. 가온데 글자로 잇습니다.</li>
+				<li>'세컨드' 규칙이 추가되었습니다. 끝에서 2번째 글자로 잇습니다.</li>
+				<li>봇 로직이 변경되었습니다. 이제 봇이 더 다양한 단어를 사용합니다.</li>
+			</ul>
+		</div>
+		<div class="update-card">
+			<h3 class="version-title">N0.0.3 [251128]</h3>
+			<ul>
+				<li>사운드 팩이 추가되었습니다. 설정에서 원하는 사운드 팩을 설정해보세요.</li>
+				<li>타자 대결에 '미러' 규칙이 추가되었습니다. 단어를 거꾸로 입력해야 합니다.</li>
+				<li>'리턴' 규칙이 추가되었습니다. 사용한 단어를 다시 사용할 수 있지만 점수는 주어지지 않습니다.</li>
+				<li>'아무거나' 모드가 추가되었습니다. 아무 단어나 사용해서 턴을 넘길 수 있습니다.</li>
+				<li>'물방울' 사운드 팩이 추가되었습니다.</li>
+				<li>봇 로직이 수정되었습니다. 이제 쿵쿵따에서 언노운 워드와 3232를 같이 적용했을 때 정상 작동합니다.</li>
+				<li>일부 버그를 수정하였습니다.</li>
+			</ul>
+		</div>
+		<div class="update-card">
+			<h3 class="version-title">N0.0.2 [251127]</h3>
+			<ul>
+				<li>솎솎의 기본 판 사이즈가 x8에서 10x10으로 커졌습니다.</li>
+				<li>솎솎에 '큰 보드' 규칙이 추가되었습니다.</li>
+				<li>단어 대결에 '트리플' 규칙이 추가되었습니다. 한 라운드에 사용할 수 있는 주제가 3개가 됩니다.</li>
+				<li>'한방' 규칙이 추가되었습니다. 한 번 틀린 단어를 입력하면 그대로 게임 오버됩니다.</li>
+				<li>일부 버그를 수정하였습니다.</li>
+			</ul>
+		</div>
+		<div class="update-card">
+			<h3 class="version-title">N0.0.1 [251126]</h3>
+			<ul>
+				<li>언노운 워드 규칙이 추가되었습니다. 없는 단어로만 이을 수 있습니다.</li>
+				<li>언노운 워드 규칙이 활성화된 경우,
+					보상이 최대 100경험치 및 10핑으로 제한됩니다.</li>
+				<li>핑 배율을 대폭 상향했습니다.</li>
+			</ul>
+		</div>
+		<div class="update-card">
+			<h3 class="version-title">N0.0.0 [251125]</h3>
+			<ul>
+				<li>서버가 설치되었습니다.</li>
+			</ul>
+		</div>
+		<div class="update-card">
+			<h3 class="version-title">2.5.1 [171218]</h3>
+			<ul>
+				<li>[by <a href="https://github.com/small-sunshines" target="_blank">small-sunshines</a>] 끄투 서버가 보안 연결을
+					지원하도록 설정했습니다.</li>
+				<li>[by <a href="https://github.com/horyu1234" target="_blank">horyu1234</a>] 자동 입력 방지를 위한 시스템을 도입했습니다.
+				</li>
+			</ul>
+		</div>
+		<div class="update-card">
+			<h3 class="version-title">2.5.0 [170214]</h3>
+			<ul>
+				<li>글자로 놀자 ! 끄투 온라인 프리 서버가 공개되었습니다.</li>
+			</ul>
+		</div>
+	</div>
+	<div id="issues" class="tab-content">
+		<h2>알려진 문제</h2>
+		<div class="update-card" style="border-left: 4px solid #F44336;">
+			<ul>
+				<li>큰 보드에서 13문자째에 줄바꿈이 일어나는 문제</li>
+				<li>영어 쿵쿵따에서 끝말잇기의 턴 넘어가는 소리가 재생되는 문제</li>
+				<li>이따금 규칙 설명이 적절하지 않은 위치에 표시되는 문제</li>
+				<li>솎솎 모드에서 점수판이 내려가고 단어가 채팅창 밑으로 나오는 문제</li>
+			</ul>
+		</div>
+	</div>
+
+	<div id="plans" class="tab-content">
+		<h2>추가 예정 기능</h2>
+		<div class="update-card" style="border-left: 4px solid #4CAF50;">
+			<ul>
+				<li>스크램블 모드 (글자 순서를 뒤죽박죽으로 해서 낱말 맞추기)</li>
+				<li>봇 힌트 기능 (낮은 확률로 힌트 제공 및 봇이 힌트 획득)</li>
+				<li>봇 채팅 기능 강화 (방에서 'ㄹㄷ', 'ㄱㄱ' 등 사용)</li>
+				<li>다양한 게임 모드와 규칙 추가</li>
+				<li>로그인 기능 확장</li>
+			</ul>
+			<p style="margin-top: 20px; color: #888; font-size: 0.7em;">
+				※ 여기 있는 내용은 추가 확정된 기능은 아니에요. 언제든 소리소문없이 사라질 수 있어요!
+			</p>
+		</div>
+	</div>
+	<script>function openTab(evt, tabName) {
+			var i,
+				tabcontent,
+				tablinks;
+			tabcontent = document.getElementsByClassName("tab-content");
+
+			for (i = 0; i < tabcontent.length; i++) {
+				tabcontent[i].style.display = "none";
+			}
+
+			tablinks = document.getElementsByClassName("tab-btn");
+
+			for (i = 0; i < tablinks.length; i++) {
+				tablinks[i].className = tablinks[i].className.replace(" active", "");
+			}
+
+			document.getElementById(tabName).style.display = "block";
+			evt.currentTarget.className += " active";
+		}
+
+	</script>
+</body>
+
+</html>
