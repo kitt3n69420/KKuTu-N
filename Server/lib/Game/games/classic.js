@@ -33,10 +33,13 @@ const PREFERRED_CHAR_PROB = [0.6, 0.7, 0.8, 0.9, 1.0];
 const RIEUL_TO_NIEUN = [4449, 4450, 4457, 4460, 4462, 4467];
 const RIEUL_TO_IEUNG = [4451, 4455, 4456, 4461, 4466, 4469];
 const NIEUN_TO_IEUNG = [4455, 4461, 4466, 4469];
-const PRIORITY_ATTACK_CHARS = ["렁", "듈", "븐", "튬", "쾃", "럿", "녘", "옄", "듐", "픔", "뮴", "냑", "븀", "엌", "쁨", "탉"];
-const PRIORITY_ATTACK_CHARS_MANNER = ["릇", "윰", "킷", "륨", "눔", "낵", "럽", "늄", "슘", "럴", "텝", "슭", "녘", "줘", "픈", "탓", "쯤", "츰", "깥", "왑", "븨", "냬", "맙", "렝", "믓", "듦", "욹"];
-const PRIORITY_KAP_ATTACK_CHARS = ["넓", "앉", "깊", "된", "뾰", "짧", "덮", "꺾", "돋", "얕", "럍", "잦", "굵", "걷", "얽", "잿", "닑", "묻", "읽", "릵", "펩", "흩", "쬐", "깎", "랿", "얇", "젊", "핼", "뻗", "뜯", "씻", "얻", "쌜", "쩽", "깻", "릻", "맺", "닗", "밝", "잃", "묽", "촛", "켤", "끓", "뱌", "섣", "옮", "뗏", "쫓", "됫", "끊", "땟", "없", "쀼", "줏", "솎", "닮", "굶"];
-const PRIORITY_KAP_ATTACK_CHARS_MANNER = ["녈", "맞", "흰", "뒷", "엑", "헛", "왼", "녑", "첫", "붉", "뻐", "뉼", "쩔", "홑", "갯", "넙", "ㄹ", "퓨", "귓", "핸", "높", "롶", "랒", "윗", "핫", "받", "샌", "쌩", "늙", "륽", "엎", "빤", "녓", "뻔", "쫄", "굳", "앨", "좁", "헥", "닫", "랓", "캘", "뙤", "뺑", "맏", "섀", "샐", "롓", "옛", "ㄴ", "웬", "갠", "긁", "섞", "묶", "쨍", "밉", "잰", "헷", "쿼", "왱", "맬", "닞", "힌", "쩨", "볶"];
+const PRIORITY_ATTACK_CHARS = ["렁", "듈", "븐", "튬", "쾃", "럿", "럄", "듐", "픔", "뮴", "냑", "녘"];
+const PRIORITY_ATTACK_CHARS_MANNER = ["릇", "륨", "늄", "럴", "텝", "슭", "픈", "깟", "왑", "켓"];
+const PRIORITY_KAP_ATTACK_CHARS = ["넓", "앉", "높", "깊", "된", "뾰", "짧", "덮", "꺾", "돋", "얕", "잦", "굵", "걷", "얽", "잿", "묻", "읽", "펩", "흩"];
+const PRIORITY_KAP_ATTACK_CHARS_MANNER = ["흰", "왼", "붉", "홑", "넙", "퓨", "귓", "받", "엎", "굳", "앨", "좁", "닫", "캘", "긁", "묶", "밉", "잰"];
+const DUBANG = ["괙", "귁", "껙", "꿕", "뀍", "늡", "릅", "돨", "똴", "뙁", "뛸", "뜩", "띡", "띨", "멫", "몇", "뱍", "뷩", "뷩", "븩", "뽓", "뿅", "솰", "쏼", "었", "쟘", "좍", "좜", "좸", "줅", "줍", "쥄", "쫙", "챱", "홱"]
+
+
 var AttackCache = {};
 
 function getAttackChars(my) {
@@ -255,6 +258,7 @@ exports.turnStart = function (force) {
 	my.game.turnTimer = setTimeout(my.turnEnd, Math.min(my.game.roundTime, my.game.turnTime + 100));
 	if (si = my.game.seq[my.game.turn]) if (si.robot) {
 		si._done = [];
+		if (si.data) delete si.data.retryCount; // Reset Retry Count for new turn
 		my.readyRobot(si);
 	}
 };
@@ -359,6 +363,22 @@ exports.submit = function (client, text) {
 				return;
 			}
 			client.publish('turnError', { code: 409, value: text }, true);
+
+			// Retry Logic for Bot: If candidates exhausted (duplicate word), try Tier 2.
+			// Logic: Tier 1 Fail -> Retry (Count 1)
+			//        Tier 2 Fail -> Retry (Count 2, 3, 4)
+			// User requested "Retry up to 3 times more for Tier 2". So allow up to count 4.
+			if (client.robot) {
+				var rCount = client.data.retryCount || 0;
+				if (rCount < 4) {
+					client.data.retryCount = rCount + 1;
+					// Force Tier 2 attack in next attempt
+					setTimeout(function () {
+						my.readyRobot(client);
+					}, ROBOT_START_DELAY[client.level]);
+				}
+			}
+
 			if (my.opts.one) my.turnEnd();
 			return;
 		}
@@ -908,6 +928,13 @@ exports.readyRobot = function (robot) {
 		var isKKT = (Const.GAME_TYPE[my.mode] == "KKT" || Const.GAME_TYPE[my.mode] == "EKK");
 		var decided = false;
 
+		// Force Retry Logic
+		if (robot.data.retryCount > 0) {
+			console.log(`[BOT] Forced Retry (Count ${robot.data.retryCount}) with Tier 2 (Previous attempt failed)`);
+			decided = true;
+			strategy = "ATTACK";
+		}
+
 		// Mode Constraints
 		var effPersonality = personality;
 		if (isKKT && effPersonality < 0) effPersonality = 0; // KKT: No Long Word personality
@@ -1001,15 +1028,42 @@ exports.readyRobot = function (robot) {
 						var tier1 = tiers.tier1 || [];
 						var tier2 = tiers.tier2 || [];
 
-						// Helper to perform attack search
+						// Shuffle Tiers but keeping Priority Chars at the front
+						// This ensures that when we slice (e.g. top 150), the Priority chars are included.
+						function postShuffle(list) {
+							var pList = isRev ? PRIORITY_KAP_ATTACK_CHARS : PRIORITY_ATTACK_CHARS;
+							var mList = isRev ? PRIORITY_KAP_ATTACK_CHARS_MANNER : PRIORITY_ATTACK_CHARS_MANNER;
+							var allP = new Set(pList.concat(mList));
+
+							var p = [], n = [];
+							list.forEach(c => {
+								if (allP.has(c)) p.push(c);
+								else n.push(c);
+							});
+							// Shuffle both parts separately, but put Priority part first
+							return shuffle(p).concat(shuffle(n));
+						}
+
+						tier1 = postShuffle(tier1);
+						tier2 = postShuffle(tier2);
+
+						// Helper to perform attack search (Optimized: Shuffle -> Slice -> Single Query)
 						function tryAttack(killers, nextStepCallback) {
 							if (!killers || killers.length === 0) {
 								nextStepCallback();
 								return;
 							}
 
-							// Construct Regex for this batch
-							var killerString = killers.join("").replace(/[\[\]\^\-\\]/g, "\\$&");
+							// Optimization: User requested "Shuffle -> Heuristic -> Fast Query"
+							// 1. Shuffle is already done above.
+							// 2. Take a reasonable subset (e.g., 150 chars) to form the Regex.
+							//    Too many chars might make Regex slow or hit DB limits.
+							//    By taking a random subset, we ensure variety without looping.
+							var subsetSize = 150;
+							var subset = killers.slice(0, subsetSize);
+
+							// Construct Regex
+							var killerString = subset.join("").replace(/[\[\]\^\-\\]/g, "\\$&");
 							var adc = my.game.char + (my.game.subChar ? ("|" + my.game.subChar) : "");
 
 							var middlePattern = ".*";
@@ -1025,7 +1079,7 @@ exports.readyRobot = function (robot) {
 								regex = `^(${adc})${middlePattern}[${killerString}]$`;
 							}
 
-							console.log(`[BOT] ATTACK: Trying Tier with ${killers.length} chars...`);
+							console.log(`[BOT] ATTACK: Optimized Query with ${subset.length} random killers...`);
 
 							var query = [['_id', new RegExp(regex)]];
 							var flagMask = 0;
@@ -1044,7 +1098,8 @@ exports.readyRobot = function (robot) {
 								query.push(['_id', Const.ENG_ID]);
 							}
 
-							DB.kkutu[my.rule.lang].find(...query).limit(50).on(function (list) {
+							// Increased limit to 200 to get a broader pool from the subset, then pick randomly.
+							DB.kkutu[my.rule.lang].find(...query).limit(200).on(function (list) {
 								if (list && list.length) {
 									list = list.filter(function (w) {
 										return w._id.length <= ROBOT_LENGTH_LIMIT[level] && !robot._done.includes(w._id);
@@ -1052,7 +1107,27 @@ exports.readyRobot = function (robot) {
 
 									if (list.length > 0) {
 										console.log(`[BOT] ATTACK Success: Found ${list.length} words.`);
-										pickList(shuffle(list));
+
+										// Dubang Avoidance Logic
+										// Condition: KSH (Korean Word Chain) AND 2 Players
+										if (Const.GAME_TYPE[my.mode] === "KSH" && my.game.seq && my.game.seq.length === 2) {
+											var safe = list.filter(w => !DUBANG.includes(w._id.slice(-1)));
+											var unsafe = list.filter(w => DUBANG.includes(w._id.slice(-1)));
+
+											if (safe.length > 0) {
+												console.log(`[BOT] Dubang Avoidance: Picking from ${safe.length} safe words.`);
+												list = shuffle(safe).concat(shuffle(unsafe));
+											} else {
+												console.log(`[BOT] Dubang Avoidance: No safe words.`);
+												list = shuffle(unsafe);
+											}
+										} else {
+											list = shuffle(list);
+										}
+
+										if (list.length > 0) pickList(list);
+										else nextStepCallback();
+
 									} else {
 										nextStepCallback();
 									}
@@ -1071,6 +1146,14 @@ exports.readyRobot = function (robot) {
 						if (my.game.chain.length === 0) {
 							console.log("[BOT] First Turn detected. Skipping Tier 1 (Hard Attack) for polite start.");
 							startTier1 = false;
+						}
+
+						// Retry Tier 2 Logic Consumption
+						if (robot.data.retryCount > 0) {
+							console.log(`[BOT] Retry Tier 2 Flag detected (Count ${robot.data.retryCount}). Skipping Tier 1.`);
+							startTier1 = false;
+							// Do NOT delete retryCount here, as we need it for subsequent retries if this one fails too.
+							// It will be cleared in turnStart or when turn ends successfully.
 						}
 
 						if (startTier1) {

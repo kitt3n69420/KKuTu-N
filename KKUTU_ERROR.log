@@ -336,4 +336,18 @@ TypeError: Cannot read properties of undefined (reading '$not')
     at aft (C:\myKKuTu\KKuTu-master\Server\lib\Game\games\classic.js:1140:8):8496 [2025. 12. 7. 오전 4:05:17] ERROR: ReferenceError: isKKT is not defined
 ReferenceError: isKKT is not defined
     at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\classic.js:881:7
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5):8496 [2025. 12. 7. 오후 12:50:30] ERROR: TypeError: Cannot read properties of undefined (reading 'length')
+TypeError: Cannot read properties of undefined (reading 'length')
+    at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\classic.js:1071:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5):8496 [2025. 12. 7. 오후 1:13:50] ERROR: TypeError: Cannot read properties of undefined (reading 'length')
+TypeError: Cannot read properties of undefined (reading 'length')
+    at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\classic.js:1061:67
+    at callback (C:\myKKuTu\KKuTu-master\Server\lib\sub\collection.js:316:13)
+    at Query.preCB (C:\myKKuTu\KKuTu-master\Server\lib\sub\collection.js:298:6)
+    at Query.handleReadyForQuery (C:\myKKuTu\KKuTu-master\Server\lib\node_modules\pg\lib\query.js:138:12)
+    at Client._handleReadyForQuery (C:\myKKuTu\KKuTu-master\Server\lib\node_modules\pg\lib\client.js:290:19)
+    at Connection.emit (node:events:518:28)
+    at C:\myKKuTu\KKuTu-master\Server\lib\node_modules\pg\lib\connection.js:114:12
+    at Parser.parse (C:\myKKuTu\KKuTu-master\Server\lib\node_modules\pg-protocol\dist\parser.js:40:17)
+    at Socket.<anonymous> (C:\myKKuTu\KKuTu-master\Server\lib\node_modules\pg-protocol\dist\index.js:11:42)
+    at Socket.emit (node:events:518:28)
