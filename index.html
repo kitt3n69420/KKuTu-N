@@ -97,8 +97,10 @@
 
     <!-- 오프라인 상태 -->
     <div class="container hidden" id="offline">
-        <span class="status-icon">😴</span>
-        <h1>서버가 잠시 쉬고 있어요</h1>
+        <div class="status-icon">
+            <img src="sleeping.png" alt="Sleeping" style="width: 120px; border: none;">
+        </div>
+        <h1>서버가 자고 있어요</h1>
         <p>현재 서버가 닫혀있거나 점검 중입니다.<br>잠시 후 다시 접속해주세요.</p>
         <button class="btn-retry" onclick="checkServer()">다시 시도</button>
         <br>
