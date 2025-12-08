@@ -649,6 +649,7 @@ exports.Client = function (socket, profile, sid) {
 		if ($room) {
 			if (spec) $room.spectate(my, room.password);
 			else $room.come(my, room.password, pass);
+			$room.checkJamsu();
 		}
 	};
 	my.leave = function (kickVote) {
@@ -660,7 +661,10 @@ exports.Client = function (socket, profile, sid) {
 			my.publish('user', my.getData());
 			if (!kickVote) return;
 		}
-		if ($room) $room.go(my, kickVote);
+		if ($room) {
+			$room.go(my, kickVote);
+			$room.checkJamsu();
+		}
 	};
 	my.setForm = function (mode) {
 		var $room = ROOM[my.place];
@@ -733,6 +737,7 @@ exports.Client = function (socket, profile, sid) {
 
 		my.ready = !my.ready;
 		my.publish('user', my.getData());
+		$room.checkJamsu();
 	};
 	my.start = function () {
 		var $room = ROOM[my.place];
@@ -881,6 +886,169 @@ exports.Room = function (room, channel) {
 	my.gaming = false;
 	my.game = {};
 
+	my.setAutoDelete = function () {
+		if (my.practice) return;
+		if (DIC[my.master] && DIC[my.master].subPlace) return; // Master is practicing
+		if (my._adt) clearTimeout(my._adt);
+		my._adt = setTimeout(function () {
+			var i;
+			var users = my.players.slice();
+			if (my.gaming) return;
+			// Master in practice: Restart timer and return
+			if (DIC[my.master] && DIC[my.master].subPlace) {
+				my.setAutoDelete();
+				return;
+			}
+			for (i in users) {
+				if (typeof users[i] !== 'object' && DIC[users[i]]) {
+					if (users[i] == my.master && DIC[users[i]].subPlace) {
+						my.setAutoDelete();
+						return;
+					}
+					DIC[users[i]].sendError(470, "");
+					DIC[users[i]].leave();
+				}
+			}
+			if (ROOM[my.id]) {
+				delete ROOM[my.id];
+				if (Cluster.isWorker) process.send({ type: "room-invalid", room: { id: my.id } });
+			}
+		}, 180000);
+	};
+
+	my.checkJamsu = function () {
+		var i, o, allReady = true;
+		var h_count = 0; // Human count (including master)
+		var b_count = 0; // Bot count
+		var waitingHumans = 0;
+		if (my.gaming) {
+			if (my._jst) {
+				clearTimeout(my._jst);
+				delete my._jst;
+			}
+			return;
+		}
+
+		for (i in my.players) {
+			o = my.players[i];
+			if (o.robot) b_count++;
+			else if (DIC[o]) {
+				h_count++;
+				if (DIC[o].id !== my.master) {
+					waitingHumans++;
+					if (!DIC[o].ready) allReady = false;
+				}
+			}
+		}
+
+		// 조건: 
+		// 1. 방장 외 대기하는 사람(봇 포함X, 사람만)이 최소 1명 이상 있어야 함 (waitingHumans > 0)
+		// 2. 그 대기하는 모든 사람이 준비 상태여야 함 (allReady)
+		if (waitingHumans > 0 && allReady) {
+			if (!my._jst) {
+				// 타이머 시작 (20초: 10초 대기 + 10초 경고)
+				my._jst = setTimeout(function () {
+					delete my._jst;
+					if (my.gaming) return;
+
+					// 타이머 만료 시 재검사
+					var hc = 0, bc = 0, wh = 0, ar = true;
+					for (var j in my.players) {
+						var p = my.players[j];
+						if (p.robot) bc++;
+						else if (DIC[p]) {
+							hc++;
+							if (DIC[p].id !== my.master) {
+								wh++;
+								if (!DIC[p].ready) ar = false;
+							}
+						}
+					}
+
+					// 조건 재확인
+					if (wh > 0 && ar) {
+						var others_count = wh + bc; // 방장 제외 총 인원 (사람+봇)
+						var masterClient = DIC[my.master];
+						var masterIsPlayer = masterClient && masterClient.form == 'J';
+						var masterIsPractice = masterClient && masterClient.subPlace;
+						var masterIsSpectator = masterClient && masterClient.form == 'S';
+
+						if (masterIsPractice) {
+							// 방장이 연습 중인 경우
+							// 1. 방장 연습 종료 (본 방으로 복귀)
+							if (masterClient) {
+								masterClient.leave();
+
+								// 2. 플레이 가능한 인원이면 자동 시작
+								// (방장이 복귀했으므로 others_count + 방장 = 1 + others_count >= 2 여야 함)
+								// 즉 others_count >= 1 이면 시작 가능
+								if (others_count >= 1) {
+									masterClient.send('system', { code: 'masterJamsu2' }); // 메시지: 관전 전환/시작 멘트 활용 (적절한 새 멘트가 없어서 기존 것 활용 혹은 subJamsu3 대응)
+									// 사실 masterJamsu2는 "관전 전환" 멘트라 약간 어색하지만, "게임이 시작됩니다" 의미로 사용
+
+									my.export();
+									setTimeout(function () {
+										my.ready();
+									}, 500);
+								} else {
+									// 혼자거나 봇만 있어서 시작 불가능하면 방에서 퇴장 (Kick)
+									masterClient.send('system', { code: 'masterJamsu' });
+									masterClient.leave();
+								}
+							}
+						} else if (masterIsPlayer) {
+							// 1. 방장 제외 플레이어 1명 && 봇 없음 -> 방장 추방
+							if (others_count >= 1 && bc === 0 && wh === 1) {
+								if (masterClient) {
+									masterClient.send('system', { code: 'masterJamsu' });
+									masterClient.leave(); // 방장 나감 -> 방장 위임됨
+								}
+							}
+							// 2. 방장 제외 봇+플레이어 2명 이상 -> 방장 관전 + 자동 시작
+							else if (others_count >= 2) {
+								if (masterClient) {
+									masterClient.send('system', { code: 'masterJamsu2' });
+									// 방장 관전 처리
+									masterClient.ready = false;
+									masterClient.setForm("S"); // 관전 모드 변경
+
+									my.export(); // 방 정보 갱신
+									setTimeout(function () {
+										my.ready(); // 게임 시작 시도
+									}, 500);
+								}
+							}
+						} else if (masterIsSpectator) {
+							// 방장이 관전인 경우
+							// 1. 방장(관전) + 사람 1명 (봇 없음) -> 방장 추방
+							if (others_count >= 1 && bc === 0 && wh === 1) {
+								if (masterClient) {
+									masterClient.send('system', { code: 'masterJamsu' });
+									masterClient.leave();
+								}
+							}
+							// 2. 방장(관전) + 플레이 가능 인원(2명 이상) -> 자동 시작
+							else if (others_count >= 2) {
+								if (masterClient) {
+									masterClient.send('system', { code: 'subJamsu3' }); // "자동으로 시작됩니다"
+									setTimeout(function () {
+										my.ready();
+									}, 500);
+								}
+							}
+							// 3. 그 외 (봇만 있거나 등) -> 무시
+						}
+					}
+				}, 20000);
+			}
+		} else {
+			if (my._jst) {
+				clearTimeout(my._jst);
+				delete my._jst;
+			}
+		}
+	};
+
 	my.getData = function () {
 		var i, readies = {};
 		var pls = [];
@@ -938,6 +1106,8 @@ exports.Room = function (room, channel) {
 			// Step 1: Pick first word (2~15 chars)
 			var q1 = "SELECT _id FROM kkutu_ko WHERE LENGTH(_id) BETWEEN 2 AND 15 ORDER BY RANDOM() LIMIT 1";
 			DB.kkutu['ko'].direct(q1, function (err, res) {
+				if (my.players.length >= my.limit) return;
+
 				var w1, len1, rem;
 
 				if (err || !res || !res.rows || res.rows.length === 0) {
@@ -956,23 +1126,28 @@ exports.Room = function (room, channel) {
 				if (rem >= 2 && Math.random() < 0.5) {
 					var q2 = `SELECT _id FROM kkutu_ko WHERE LENGTH(_id) BETWEEN 2 AND ${rem} ORDER BY RANDOM() LIMIT 1`;
 					DB.kkutu['ko'].direct(q2, function (err2, res2) {
+						if (my.players.length >= my.limit) return;
+
 						var customName = w1;
 						if (!err2 && res2 && res2.rows && res2.rows.length > 0) {
 							customName += res2.rows[0]._id;
 						}
-						// Create valid robot with combined name
+						// Create valid robot with combined name (or just w1 if query failed)
 						my.players.push(new exports.Robot(null, my.id, 2, customName));
 						my.export();
+						my.checkJamsu();
 					});
 				} else {
 					// Just the first word
 					my.players.push(new exports.Robot(null, my.id, 2, w1));
 					my.export();
+					my.checkJamsu();
 				}
 			});
 		} else {
 			my.players.push(new exports.Robot(null, my.id, 2));
 			my.export();
+			my.checkJamsu();
 		}
 	};
 	my.setAI = function (target, level, team, personality, preferredChar) {
@@ -1006,7 +1181,10 @@ exports.Room = function (room, channel) {
 					if (j != -1) my.game.seq.splice(j, 1);
 				}
 				my.players.splice(i, 1);
-				if (!noEx) my.export();
+				if (!noEx) {
+					my.export();
+					my.checkJamsu();
+				}
 				return true;
 			}
 		}
@@ -1048,7 +1226,10 @@ exports.Room = function (room, channel) {
 
 		if (x == -1) {
 			client.place = 0;
-			if (my.players.length < 1) delete ROOM[my.id];
+			if (my.players.length < 1) {
+				if (my._adt) clearTimeout(my._adt);
+				delete ROOM[my.id];
+			}
 			return client.sendError(409);
 		}
 		my.players.splice(x, 1);
@@ -1088,6 +1269,7 @@ exports.Room = function (room, channel) {
 				my.gaming = false;
 				my.game = {};
 			}
+			if (my._adt) clearTimeout(my._adt);
 			delete ROOM[my.id];
 		}
 		if (my.practice) {
@@ -1195,6 +1377,8 @@ exports.Room = function (room, channel) {
 		} else DIC[my.master].sendError(412);
 	};
 	my.start = function (pracLevel, personality, preferredChar) {
+		if (my._adt) clearTimeout(my._adt);
+		if (my._jst) { clearTimeout(my._jst); delete my._jst; }
 		console.log("[DEBUG] my.start called with:", pracLevel, personality, preferredChar);
 		var i, j, o, hum = 0;
 		var now = (new Date()).getTime();
@@ -1366,6 +1550,7 @@ exports.Room = function (room, channel) {
 		delete my.game.seq;
 		delete my.game.wordLength;
 		delete my.game.dic;
+		my.setAutoDelete();
 	};
 	my.byMaster = function (type, data, nob) {
 		if (DIC[my.master]) DIC[my.master].publish(type, data, nob);
@@ -1479,6 +1664,7 @@ exports.Room = function (room, channel) {
 		return c[func];
 	};
 	my.set(room);
+	my.setAutoDelete();
 };
 function getFreeChannel() {
 	var i, list = {};

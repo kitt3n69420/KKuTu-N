@@ -1295,9 +1295,9 @@ $lib.Classic.turnEnd = function (id, data) {
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-$lib.Jaqwi.roundReady = function(data){
+$lib.Jaqwi.roundReady = function (data) {
 	var tv = L['jqTheme'] + ": " + L['theme_' + data.theme];
-	
+
 	clearBoard();
 	$data._roundTime = $data.room.time * 1000;
 	$data._fastTime = 10000;
@@ -1312,56 +1312,56 @@ $lib.Jaqwi.roundReady = function(data){
 	playSound('round_start');
 	clearInterval($data._tTime);
 };
-$lib.Jaqwi.turnStart = function(data){
+$lib.Jaqwi.turnStart = function (data) {
 	$(".game-user-current").removeClass("game-user-current");
 	$(".game-user-bomb").removeClass("game-user-bomb");
-	if($data.room.game.seq.indexOf($data.id) >= 0) $stage.game.here.show();
+	if ($data.room.game.seq.indexOf($data.id) >= 0) $stage.game.here.show();
 	$stage.game.display.html($data._char = data.char);
 	clearInterval($data._tTime);
 	$data._tTime = addInterval(turnGoing, TICK);
 	playBGM('jaqwi');
 };
-$lib.Jaqwi.turnGoing = function(){
+$lib.Jaqwi.turnGoing = function () {
 	var $rtb = $stage.game.roundBar;
 	var bRate;
 	var tt;
-	
-	if(!$data.room) clearInterval($data._tTime);
+
+	if (!$data.room) clearInterval($data._tTime);
 	$data._roundTime -= TICK;
-	
-	tt = $data._spectate ? L['stat_spectate'] : ($data._roundTime*0.001).toFixed(1) + L['SECOND'];
+
+	tt = $data._spectate ? L['stat_spectate'] : ($data._roundTime * 0.001).toFixed(1) + L['SECOND'];
 	$rtb
-		.width($data._roundTime/$data.room.time*0.1 + "%")
+		.width($data._roundTime / $data.room.time * 0.1 + "%")
 		.html(tt);
-		
-	if(!$rtb.hasClass("round-extreme")) if($data._roundTime <= $data._fastTime){
+
+	if (!$rtb.hasClass("round-extreme")) if ($data._roundTime <= $data._fastTime) {
 		bRate = $data.bgm.currentTime / $data.bgm.duration;
-		if($data.bgm.paused) stopBGM();
+		if ($data.bgm.paused) stopBGM();
 		else playBGM('jaqwiF');
 		$data.bgm.currentTime = $data.bgm.duration * bRate;
 		$rtb.addClass("round-extreme");
 	}
 };
-$lib.Jaqwi.turnHint = function(data){
+$lib.Jaqwi.turnHint = function (data) {
 	playSound('mission');
 	pushHint(data.hint);
 };
-$lib.Jaqwi.turnEnd = function(id, data){
+$lib.Jaqwi.turnEnd = function (id, data) {
 	var $sc = $("<div>").addClass("deltaScore").html("+" + data.score);
 	var $uc = $("#game-user-" + id);
 
-	if(data.giveup){
+	if (data.giveup) {
 		$uc.addClass("game-user-bomb");
-	}else if(data.answer){
+	} else if (data.answer) {
 		$stage.game.here.hide();
 		$stage.game.display.html($("<label>").css('color', "#FFFF44").html(data.answer));
 		stopBGM();
 		playSound('horr');
-	}else{
+	} else {
 		// if(data.mean) turnHint(data);
-		if(id == $data.id) $stage.game.here.hide();
+		if (id == $data.id) $stage.game.here.hide();
 		addScore(id, data.score);
-		if($data._roundTime > 10000) $data._roundTime = 10000;
+		if ($data._roundTime > 10000) $data._roundTime = 10000;
 		drawObtainedScore($uc, $sc);
 		updateScore(id, getScore(id)).addClass("game-user-current");
 		playSound('success');
@@ -1386,9 +1386,9 @@ $lib.Jaqwi.turnEnd = function(id, data){
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-$lib.Crossword.roundReady = function(data, spec){
+$lib.Crossword.roundReady = function (data, spec) {
 	var turn = data.seq ? data.seq.indexOf($data.id) : -1;
-	
+
 	clearBoard();
 	$(".jjoriping,.rounds,.game-body").addClass("cw");
 	$data._roundTime = $data.room.time * 1000;
@@ -1397,49 +1397,49 @@ $lib.Crossword.roundReady = function(data, spec){
 	$stage.game.items.hide();
 	$stage.game.cwcmd.show().css('opacity', 0);
 	drawRound($data.selectedRound);
-	if(!spec) playSound('round_start');
+	if (!spec) playSound('round_start');
 	clearInterval($data._tTime);
 };
-$lib.Crossword.turnEnd = function(id, data){
+$lib.Crossword.turnEnd = function (id, data) {
 	var $sc = $("<div>").addClass("deltaScore").html("+" + data.score);
 	var $uc = $("#game-user-" + id);
 	var $cr;
 	var key;
-	
-	if(data.score){
+
+	if (data.score) {
 		key = data.pos.join(',');
-		if(id == $data.id){
+		if (id == $data.id) {
 			$stage.game.cwcmd.css('opacity', 0);
 			playSound('success');
-		}else{
-			if($data._sel) if(data.pos.join(',') == $data._sel.join(',')) $stage.game.cwcmd.css('opacity', 0);
+		} else {
+			if ($data._sel) if (data.pos.join(',') == $data._sel.join(',')) $stage.game.cwcmd.css('opacity', 0);
 			playSound('mission');
 		}
 		$data._bdb[key][4] = data.value;
 		$data._bdb[key][5] = id;
-		if(data.pos[0] == $data.selectedRound - 1) $lib.Crossword.drawDisplay();
-		else{
+		if (data.pos[0] == $data.selectedRound - 1) $lib.Crossword.drawDisplay();
+		else {
 			$cr = $($stage.game.round.children("label").get(data.pos[0])).addClass("round-effect");
-			addTimeout(function(){ $cr.removeClass("round-effect"); }, 800);
+			addTimeout(function () { $cr.removeClass("round-effect"); }, 800);
 		}
 		addScore(id, data.score);
 		updateScore(id, getScore(id));
 		drawObtainedScore($uc, $sc);
-	}else{
+	} else {
 		stopBGM();
 		$stage.game.round.empty();
 		playSound('horr');
 	}
 };
-$lib.Crossword.drawDisplay = function(){
+$lib.Crossword.drawDisplay = function () {
 	var CELL = 100 / 8;
 	var board = $data._boards[$data.selectedRound - 1];
 	var $pane = $stage.game.display.empty();
 	var $bar;
 	var i, j, x, y, vert, len, word, key;
 	var $w = {};
-	
-	for(i in board){
+
+	for (i in board) {
 		x = Number(board[i][0]);
 		y = Number(board[i][1]);
 		vert = board[i][2] == "1";
@@ -1453,52 +1453,52 @@ $lib.Crossword.drawDisplay = function(){
 				height: (vert ? len : 1) * CELL + "%"
 			})
 		);
-		if(word) $bar.addClass("cw-open");
-		if(board[i][5] == $data.id) $bar.addClass("cw-my-open");
+		if (word) $bar.addClass("cw-open");
+		if (board[i][5] == $data.id) $bar.addClass("cw-my-open");
 		else $bar.on('click', $lib.Crossword.onBar).on('mouseleave', $lib.Crossword.onSwap);
-		for(j=0; j<len; j++){
+		for (j = 0; j < len; j++) {
 			key = x + "-" + y;
-			
-			if(word) $w[key] = word.charAt(j);
+
+			if (word) $w[key] = word.charAt(j);
 			$bar.append($("<div>").addClass("cw-cell")
 				.attr('id', "cwc-" + key)
 				.html($w[key] || "")
 			);
-			if(vert) y++; else x++;
+			if (vert) y++; else x++;
 		}
 	}
 };
-$lib.Crossword.onSwap = function(e){
+$lib.Crossword.onSwap = function (e) {
 	$stage.game.display.prepend($(e.currentTarget));
 };
-$lib.Crossword.onRound = function(e){
+$lib.Crossword.onRound = function (e) {
 	var round = $(e.currentTarget).html().charCodeAt(0) - 9311;
-	
+
 	drawRound($data.selectedRound = round);
 	$(".rounds label").on('click', $lib.Crossword.onRound);
 	$lib.Crossword.drawDisplay();
 };
-$lib.Crossword.onBar = function(e){
+$lib.Crossword.onBar = function (e) {
 	var $bar = $(e.currentTarget);
 	var pos = $bar.attr('id').slice(3).split('-');
 	var data = $data._means[$data.selectedRound - 1][pos.join(',')];
 	var vert = data.dir == "1";
-	
+
 	$stage.game.cwcmd.css('opacity', 1);
-	$data._sel = [ $data.selectedRound - 1, pos[0], pos[1], pos[2] ];
+	$data._sel = [$data.selectedRound - 1, pos[0], pos[1], pos[2]];
 	$(".cw-q-head").html(L[vert ? 'cwVert' : 'cwHorz'] + data.len + L['cwL']);
 	$("#cw-q-input").val("").focus();
 	$(".cw-q-body").html(processWord("★", data.mean, data.theme, data.type.split(',')));
 };
-$lib.Crossword.turnStart = function(data, spec){
+$lib.Crossword.turnStart = function (data, spec) {
 	var i, j;
-	
+
 	$data._bdb = {};
 	$data._boards = data.boards;
 	$data._means = data.means;
-	for(i in data.boards){
-		for(j in data.boards[i]){
-			$data._bdb[[ i, data.boards[i][j][0], data.boards[i][j][1], data.boards[i][j][2] ].join(',')] = data.boards[i][j];
+	for (i in data.boards) {
+		for (j in data.boards[i]) {
+			$data._bdb[[i, data.boards[i][j][0], data.boards[i][j][1], data.boards[i][j][2]].join(',')] = data.boards[i][j];
 		}
 	}
 	$(".rounds label").on('click', $lib.Crossword.onRound);
@@ -1508,7 +1508,7 @@ $lib.Crossword.turnStart = function(data, spec){
 	playBGM('jaqwi');
 };
 $lib.Crossword.turnGoing = $lib.Jaqwi.turnGoing;
-$lib.Crossword.turnHint = function(data){
+$lib.Crossword.turnHint = function (data) {
 	playSound('fail');
 };
 
@@ -1898,100 +1898,100 @@ $lib.Daneo.turnEnd = function (id, data) {
 
 $lib.Free = {};
 $lib.Free.roundReady = function (data) {
-    var i, len = $data.room.game.title.length;
+	var i, len = $data.room.game.title.length;
 
-    clearBoard();
-    $data._roundTime = $data.room.time * 1000;
+	clearBoard();
+	$data._roundTime = $data.room.time * 1000;
 
-    // Display "Free Mode" or similar. 
-    // Since there is no specific theme, maybe just "아무거나" (Anything)
-    $stage.game.display.html($data._char = "<아무거나>");
+	// Display "Free Mode" or similar. 
+	// Since there is no specific theme, maybe just "아무거나" (Anything)
+	$stage.game.display.html($data._char = "<아무거나>");
 
-    $stage.game.chain.show().html($data.chain = 0);
-    if ($data.room.opts.mission) {
-        $stage.game.items.show().css('opacity', 1).html($data.mission = data.mission);
-    }
-    drawRound(data.round);
-    playSound('round_start');
-    recordEvent('roundReady', { data: data });
+	$stage.game.chain.show().html($data.chain = 0);
+	if ($data.room.opts.mission) {
+		$stage.game.items.show().css('opacity', 1).html($data.mission = data.mission);
+	}
+	drawRound(data.round);
+	playSound('round_start');
+	recordEvent('roundReady', { data: data });
 };
 
 $lib.Free.turnStart = function (data) {
-    $data.room.game.turn = data.turn;
-    if (data.seq) $data.room.game.seq = data.seq;
-    if (!($data._tid = $data.room.game.seq[data.turn])) return;
-    if ($data._tid.robot) $data._tid = $data._tid.id;
-    data.id = $data._tid;
+	$data.room.game.turn = data.turn;
+	if (data.seq) $data.room.game.seq = data.seq;
+	if (!($data._tid = $data.room.game.seq[data.turn])) return;
+	if ($data._tid.robot) $data._tid = $data._tid.id;
+	data.id = $data._tid;
 
-    // Keep the display as is (set in roundReady)
-    $stage.game.display.html($data._char);
+	// Keep the display as is (set in roundReady)
+	$stage.game.display.html($data._char);
 
-    $("#game-user-" + data.id).addClass("game-user-current");
-    if (!$data._replay) {
-        $stage.game.here.css('display', (data.id == $data.id) ? "block" : "none");
-        if (data.id == $data.id) {
-            if (mobile) $stage.game.hereText.val("").focus();
-            else $stage.talk.focus();
-        }
-    }
-    $stage.game.items.html($data.mission = data.mission);
+	$("#game-user-" + data.id).addClass("game-user-current");
+	if (!$data._replay) {
+		$stage.game.here.css('display', (data.id == $data.id) ? "block" : "none");
+		if (data.id == $data.id) {
+			if (mobile) $stage.game.hereText.val("").focus();
+			else $stage.talk.focus();
+		}
+	}
+	$stage.game.items.html($data.mission = data.mission);
 
-    ws.onmessage = _onMessage;
-    clearInterval($data._tTime);
-    clearTrespasses();
-    // No specific chars to track
-    $data._chars = [];
-    $data._speed = data.speed;
-    $data._tTime = addInterval(turnGoing, TICK);
-    $data.turnTime = data.turnTime;
-    $data._turnTime = data.turnTime;
-    $data._roundTime = data.roundTime;
-    $data._turnSound = playSound("T" + data.speed);
-    recordEvent('turnStart', {
-        data: data
-    });
+	ws.onmessage = _onMessage;
+	clearInterval($data._tTime);
+	clearTrespasses();
+	// No specific chars to track
+	$data._chars = [];
+	$data._speed = data.speed;
+	$data._tTime = addInterval(turnGoing, TICK);
+	$data.turnTime = data.turnTime;
+	$data._turnTime = data.turnTime;
+	$data._roundTime = data.roundTime;
+	$data._turnSound = playSound("T" + data.speed);
+	recordEvent('turnStart', {
+		data: data
+	});
 };
 
 $lib.Free.turnGoing = $lib.Classic.turnGoing;
 $lib.Free.turnEnd = function (id, data) {
-    var $sc = $("<div>")
-        .addClass("deltaScore")
-        .html((data.score > 0) ? ("+" + (data.score - data.bonus)) : data.score);
-    var $uc = $(".game-user-current");
-    var hi;
+	var $sc = $("<div>")
+		.addClass("deltaScore")
+		.html((data.score > 0) ? ("+" + (data.score - data.bonus)) : data.score);
+	var $uc = $(".game-user-current");
+	var hi;
 
-    if ($data._turnSound) $data._turnSound.stop();
-    addScore(id, data.score);
-    clearInterval($data._tTime);
-    if (data.ok) {
-        checkFailCombo();
-        clearTimeout($data._fail);
-        $stage.game.here.hide();
-        $stage.game.chain.html(++$data.chain);
-        pushDisplay(data.value, data.mean, data.theme, data.wc);
-    } else {
-        checkFailCombo(id);
-        $sc.addClass("lost");
-        $(".game-user-current").addClass("game-user-bomb");
-        $stage.game.here.hide();
-        playSound('timeout');
-    }
-    if (data.hint) {
-        // Just display the hint word without special highlighting
-        $stage.game.display.empty()
-            .append($("<label>").html(data.hint));
-    }
-    if (data.bonus) {
-        mobile ? $sc.html("+" + (data.score - data.bonus) + "+" + data.bonus) : addTimeout(function () {
-            var $bc = $("<div>")
-                .addClass("deltaScore bonus")
-                .html("+" + data.bonus);
+	if ($data._turnSound) $data._turnSound.stop();
+	addScore(id, data.score);
+	clearInterval($data._tTime);
+	if (data.ok) {
+		checkFailCombo();
+		clearTimeout($data._fail);
+		$stage.game.here.hide();
+		$stage.game.chain.html(++$data.chain);
+		pushDisplay(data.value, data.mean, data.theme, data.wc);
+	} else {
+		checkFailCombo(id);
+		$sc.addClass("lost");
+		$(".game-user-current").addClass("game-user-bomb");
+		$stage.game.here.hide();
+		playSound('timeout');
+	}
+	if (data.hint) {
+		// Just display the hint word without special highlighting
+		$stage.game.display.empty()
+			.append($("<label>").html(data.hint));
+	}
+	if (data.bonus) {
+		mobile ? $sc.html("+" + (data.score - data.bonus) + "+" + data.bonus) : addTimeout(function () {
+			var $bc = $("<div>")
+				.addClass("deltaScore bonus")
+				.html("+" + data.bonus);
 
-            drawObtainedScore($uc, $bc);
-        }, 500);
-    }
-    drawObtainedScore($uc, $sc).removeClass("game-user-current");
-    updateScore(id, getScore(id));
+			drawObtainedScore($uc, $bc);
+		}, 500);
+	}
+	drawObtainedScore($uc, $sc).removeClass("game-user-current");
+	updateScore(id, getScore(id));
 };
 
 /**
@@ -2358,6 +2358,9 @@ function onMessage(data) {
 	var $target;
 
 	switch (data.type) {
+		case 'system':
+			notice(L[data.code]);
+			break;
 		case 'updateUser':
 			if ($data.users[data.id]) {
 				$data.users[data.id].profile = data.profile;
@@ -3308,7 +3311,7 @@ function updateRoom(gaming) {
 			addonNickname($bar, o);
 		}
 		if (arAcc && $data.room.master == $data.id && allReady) {
-			if (!$data._jamsu) $data._jamsu = addTimeout(onMasterSubJamsu, 5000);
+			if (!$data._jamsu) $data._jamsu = addTimeout(onMasterSubJamsu, 15000);
 		} else {
 			clearTimeout($data._jamsu);
 			delete $data._jamsu;
@@ -3319,11 +3322,31 @@ function updateRoom(gaming) {
 	}
 }
 function onMasterSubJamsu() {
-	notice(L['subJamsu']);
-	$data._jamsu = addTimeout(function () {
-		send('leave');
-		alert(L['masterJamsu']);
-	}, 30000);
+	var room = $data.room;
+	var my = $data.users[$data.id];
+	var others_count = 0;
+	var i;
+
+	// 방장 제외 인원 수 계산 (봇 포함)
+	// $data.room.players는 ID 리스트임
+	for (i in room.players) {
+		if (room.players[i] != room.master) others_count++;
+	}
+
+	var msgKey = 'subJamsu'; // 기본: 강퇴 경고
+
+	if (others_count >= 2) {
+		if (my.game.form == 'S') {
+			msgKey = 'subJamsu3'; // 관전 방장 자동 시작 경고
+		} else {
+			msgKey = 'subJamsu2'; // 플레이어 방장 관전 전환 경고
+		}
+	}
+
+	notice(L[msgKey]);
+
+	// 클라이언트 측 강제 퇴장은 제거함 (서버가 처리)
+	delete $data._jamsu;
 }
 function updateScore(id, score) {
 	var i, o, t;

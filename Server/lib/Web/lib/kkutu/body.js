@@ -1197,7 +1197,7 @@ function updateRoom(gaming) {
 			addonNickname($bar, o);
 		}
 		if (arAcc && $data.room.master == $data.id && allReady) {
-			if (!$data._jamsu) $data._jamsu = addTimeout(onMasterSubJamsu, 5000);
+			if (!$data._jamsu) $data._jamsu = addTimeout(onMasterSubJamsu, 15000);
 		} else {
 			clearTimeout($data._jamsu);
 			delete $data._jamsu;
@@ -1208,11 +1208,30 @@ function updateRoom(gaming) {
 	}
 }
 function onMasterSubJamsu() {
-	notice(L['subJamsu']);
-	$data._jamsu = addTimeout(function () {
-		send('leave');
-		alert(L['masterJamsu']);
-	}, 30000);
+	var room = $data.room;
+	var my = $data.users[$data.id];
+	var others_count = 0;
+	var i;
+
+	// 방장 제외 인원 수 계산 (봇 포함)
+	for (i in room.players) {
+		if (room.players[i] != room.master) others_count++;
+	}
+
+	var msgKey = 'subJamsu'; // 기본: 강퇴 경고
+
+	if (others_count >= 2) {
+		if (my.game.form == 'S') {
+			msgKey = 'subJamsu3'; // 관전 방장 자동 시작 경고
+		} else {
+			msgKey = 'subJamsu2'; // 플레이어 방장 관전 전환 경고
+		}
+	}
+
+	notice(L[msgKey]);
+
+	// 클라이언트 측 강제 퇴장은 제거함 (서버가 처리)
+	delete $data._jamsu;
 }
 function updateScore(id, score) {
 	var i, o, t;

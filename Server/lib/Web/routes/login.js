@@ -41,12 +41,22 @@ function process(req, accessToken, MainDB, $p, done) {
 		JLog.info("Session Upsert Completed");
 		MainDB.users.findOne(['_id', $p.id]).on(($body) => {
 			JLog.info("User FindOne Completed. Found: " + !!$body);
-			req.session.profile = $p;
 			if ($body) {
+				for (let key in $body) {
+					if ($body[key] && !$p[key]) $p[key] = $body[key];
+				}
+				if ($body.nickname) {
+					$p.nickname = $body.nickname;
+					$p.name = $body.nickname;
+					$p.title = $body.nickname;
+				}
 				MainDB.users.update(['_id', $p.id]).set(['lastLogin', now]).on();
+				// CRITICAL: Update the session in DB with the merged profile
+				MainDB.session.update(['_id', req.session.id]).set(['profile', $p]).on();
 			} else {
 				JLog.info("New User - No existing record found");
 			}
+			req.session.profile = $p;
 			done(null, $p);
 		});
 	});
@@ -99,11 +109,45 @@ exports.run = (Server, page) => {
 				birth: [4, 16, 0],
 				_age: { min: 20, max: undefined }
 			};
-			MainDB.session.upsert(['_id', req.session.id]).set(['profile', JSON.stringify(lp)], ['createdAt', now]).on(function ($res) {
-				MainDB.users.update(['_id', id]).set(['lastLogin', now]).on();
-				req.session.admin = true;
-				req.session.profile = lp;
-				res.redirect("/");
+			MainDB.users.findOne(['_id', id]).on(($body) => {
+				JLog.info("Login Debug: DB Body found: " + !!$body);
+				if ($body) JLog.info("Login Debug: DB Body content: " + JSON.stringify($body));
+
+				if ($body) {
+					for (let key in $body) {
+						if ($body[key] && !lp[key]) lp[key] = $body[key];
+					}
+					if ($body.nickname) {
+						lp.nickname = $body.nickname;
+						lp.name = $body.nickname; // Sync name/title too
+						lp.title = $body.nickname;
+					}
+					JLog.info("Login Debug: Merged Profile: " + JSON.stringify(lp));
+					MainDB.users.update(['_id', id]).set(['lastLogin', now]).on();
+				} else {
+					JLog.info("New Local User - No existing record found. Creating...");
+					// Explicitly insert with upsert=true equivalent or just insert ignore
+					// Since upsert in collection.js might be weird, let's try strict insert
+					// and if it fails (duplicate), we don't care because we'll update next time.
+					// But collection.js upsert uses ON CONFLICT DO UPDATE.
+					// Let's use the .upsert() method properly.
+
+					// Re-define lp defaults for DB if needed, but for now just inserting ID is enough
+					// The user will setup nickname later.
+
+					// MainDB.users.upsert method needs to be called carefully.
+					// According to collection.js: my.upsert = function(){ return new pointer("update", query(arguments), { upsert: true }); };
+					// But pointer.js update with upsert:true logic:
+					// case "upsert": ... INSERT ... ON CONFLICT ...
+
+					MainDB.users.upsert(['_id', id]).set(['lastLogin', now]).on();
+				}
+
+				MainDB.session.upsert(['_id', req.session.id]).set(['profile', JSON.stringify(lp)], ['createdAt', now]).on(function ($res) {
+					req.session.admin = true;
+					req.session.profile = lp;
+					res.redirect("/");
+				});
 			});
 		}
 	});
