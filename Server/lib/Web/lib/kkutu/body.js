@@ -64,15 +64,23 @@ function showDialog($d, noToggle) {
 function applyOptions(opt) {
 	$data.opts = opt;
 
-	$data.muteBGM = $data.opts.mb;
-	$data.muteEff = $data.opts.me;
-	$data.BGMVolume = parseFloat($data.opts.bv);
+	// localStorage에서 볼륨 설정 불러오기 (우선순위: localStorage > cookie)
+	var savedSettings = loadVolumeSettings();
+
+	// 음소거 상태 적용 (localStorage 우선)
+	$data.muteBGM = savedSettings.bgmMute !== undefined ? savedSettings.bgmMute : ($data.opts.mb || false);
+	$data.muteEff = savedSettings.effectMute !== undefined ? savedSettings.effectMute : ($data.opts.me || false);
+
+	// 볼륨 값 적용 (localStorage 우선)
+	$data.BGMVolume = savedSettings.bgmVolume !== undefined ? savedSettings.bgmVolume : parseFloat($data.opts.bv);
 	if (isNaN($data.BGMVolume)) $data.BGMVolume = 1;
-	$data.EffectVolume = parseFloat($data.opts.ev);
+
+	$data.EffectVolume = savedSettings.effectVolume !== undefined ? savedSettings.effectVolume : parseFloat($data.opts.ev);
 	if (isNaN($data.EffectVolume)) $data.EffectVolume = 1;
 
-	$("#mute-bgm").attr('checked', $data.muteBGM);
-	$("#mute-effect").attr('checked', $data.muteEff);
+	// UI 요소에 값 설정
+	$("#mute-bgm").prop('checked', $data.muteBGM);
+	$("#mute-effect").prop('checked', $data.muteEff);
 	$("#deny-invite").attr('checked', $data.opts.di);
 	$("#deny-whisper").attr('checked', $data.opts.dw);
 	$("#deny-friend").attr('checked', $data.opts.df);
@@ -80,33 +88,60 @@ function applyOptions(opt) {
 	$("#sort-user").attr('checked', $data.opts.su);
 	$("#only-waiting").attr('checked', $data.opts.ow);
 	$("#only-unlock").attr('checked', $data.opts.ou);
-	$("#sound-pack").val($data.opts.sp || "");
+
+	// 사운드팩 설정 (localStorage 우선)
+	var soundPack = savedSettings.soundPack || $data.opts.sp || "";
+	$("#sound-pack").val(soundPack);
+
+	// 슬라이더 값 설정
 	$(".bgmVolume").val($data.BGMVolume * 100);
 	$(".effectVolume").val($data.EffectVolume * 100);
 
+	// 볼륨 적용
 	updateBGMVol();
 	updateEffectVol();
 }
 
+
 function updateBGMVol() {
+	// 실제 볼륨 업데이트 (음소거 시 0, 아니면 설정된 볼륨)
 	if ($data.muteBGM)
 		updateVolume(0, $data.EffectVolume);
 	else
 		updateVolume($data.BGMVolume, $data.EffectVolume);
 
-	if ($("#mute-bgm").prop("checked") !== $data.muteBGM) $("#mute-bgm").prop("checked", $data.muteBGM);
-	if ($(".bgmVolume").val() != $data.BGMVolume * 100) $(".bgmVolume").val($data.BGMVolume * 100);
+	// UI 동기화 (슬라이더 값은 음소거 여부와 관계없이 유지)
+	if ($("#mute-bgm").prop("checked") !== $data.muteBGM) {
+		$("#mute-bgm").prop("checked", $data.muteBGM);
+	}
+	// 슬라이더는 항상 실제 볼륨 값을 표시 (음소거 상태와 무관)
+	var currentSliderValue = $(".bgmVolume").val();
+	var expectedSliderValue = Math.round($data.BGMVolume * 100);
+	if (currentSliderValue != expectedSliderValue) {
+		$(".bgmVolume").val(expectedSliderValue);
+	}
 }
 
+
 function updateEffectVol() {
+	// 실제 볼륨 업데이트 (음소거 시 0, 아니면 설정된 볼륨)
 	if ($data.muteEff)
 		updateVolume($data.BGMVolume, 0);
 	else
 		updateVolume($data.BGMVolume, $data.EffectVolume);
 
-	if ($("#mute-effect").prop("checked") !== $data.muteEff) $("#mute-effect").prop("checked", $data.muteEff);
-	if ($(".effectVolume").val() != $data.EffectVolume * 100) $(".effectVolume").val($data.EffectVolume * 100);
+	// UI 동기화 (슬라이더 값은 음소거 여부와 관계없이 유지)
+	if ($("#mute-effect").prop("checked") !== $data.muteEff) {
+		$("#mute-effect").prop("checked", $data.muteEff);
+	}
+	// 슬라이더는 항상 실제 볼륨 값을 표시 (음소거 상태와 무관)
+	var currentSliderValue = $(".effectVolume").val();
+	var expectedSliderValue = Math.round($data.EffectVolume * 100);
+	if (currentSliderValue != expectedSliderValue) {
+		$(".effectVolume").val(expectedSliderValue);
+	}
 }
+
 
 function updateVolume(bgmVol, effectVol) { // bgmVol, effectVol
 	var vol;
@@ -381,7 +416,7 @@ function onMessage(data) {
 			break;
 		case 'friendAdd':
 			$target = $data.users[data.from].profile;
-			i = ($target.title || $target.name) + "(#" + data.from.substr(0, 5) + ")";
+			i = ($target.title || $target.name) + "(#" + String(data.from).substr(0, 5) + ")";
 			send('friendAddRes', {
 				from: data.from,
 				res: $data.opts.df ? false : confirm(i + L['attemptFriendAdd'])
@@ -389,7 +424,7 @@ function onMessage(data) {
 			break;
 		case 'friendAddRes':
 			$target = $data.users[data.target].profile;
-			i = ($target.title || $target.name) + "(#" + data.target.substr(0, 5) + ")";
+			i = ($target.title || $target.name) + "(#" + String(data.target).substr(0, 5) + ")";
 			notice(i + L['friendAddRes_' + (data.res ? 'ok' : 'no')]);
 			if (data.res) {
 				$data.friends[data.target] = $target.title || $target.name;
@@ -1149,7 +1184,17 @@ function updateRoom(gaming) {
 			if ($data._replay) {
 				o = $rec.users[$data.room.game.seq[i]] || $data.room.game.seq[i];
 			} else {
-				o = $data.users[$data.room.game.seq[i]] || $data.robots[$data.room.game.seq[i].id] || $data.room.game.seq[i];
+				// 서버에서 보낸 새 봇 데이터를 우선 사용하여 점수 동기화
+				var serverData = $data.room.game.seq[i];
+				if (serverData && serverData.robot) {
+					// 캐시된 봇이 있으면 서버 데이터로 game 객체 업데이트
+					if ($data.robots[serverData.id]) {
+						$data.robots[serverData.id].game = serverData.game;
+					}
+					o = $data.robots[serverData.id] || serverData;
+				} else {
+					o = $data.users[$data.room.game.seq[i]] || $data.robots[$data.room.game.seq[i].id] || $data.room.game.seq[i];
+				}
 			}
 			if (o.robot) {
 				if (!o.profile) o.profile = getAIProfile(o.level);
@@ -1562,7 +1607,7 @@ function drawLeaderboard(data) {
 	$("#ranking-" + $data.id).addClass("ranking-me");
 	$stage.dialog.lbPage.html(L['page'] + " " + page);
 	$stage.dialog.lbPrev.attr('disabled', page <= 1);
-	$stage.dialog.lbNext.attr('disabled', data.data.length < 15);
+	$stage.dialog.lbNext.attr('disabled', data.data.length < 12);
 	$stage.dialog.lbMe.attr('disabled', !!$data.guest);
 	$data._lbpage = page - 1;
 }
@@ -1601,7 +1646,7 @@ function updateCommunity() {
 		var memo = $data.friends[id];
 
 		if ($data._friends[id].server) return fail(455);
-		if (!confirm(memo + "(#" + id.substr(0, 5) + ")\n" + L['friendSureRemove'])) return;
+		if (!confirm(memo + "(#" + String(id).substr(0, 5) + ")\n" + L['friendSureRemove'])) return;
 		send('friendRemove', { id: id }, true);
 	}
 	$("#CommunityDiag .dialog-title").html(L['communityText'] + " (" + len + " / 100)");
@@ -1657,7 +1702,7 @@ function requestProfile(id) {
 		.append($("<div>").addClass("profile-head-item")
 			.append(getImage(o.profile.image).addClass("profile-image"))
 			.append($("<div>").addClass("profile-title ellipse").html(o.profile.title || o.profile.name)
-				.append($("<label>").addClass("profile-tag").html(" #" + o.id.toString().substr(0, 5)))
+				.append($("<label>").addClass("profile-tag").html(" #" + String(o.id).substr(0, 5)))
 			)
 		)
 		.append($("<div>").addClass("profile-head-item")
@@ -2045,12 +2090,19 @@ function getScore(id) {
 	if ($data._replay) return $rec.users[id].game.score;
 	else return ($data.users[id] || $data.robots[id]).game.score;
 }
-function addScore(id, score) {
+function addScore(id, score, totalScore) {
 	var u;
 	if ($data._replay) u = $rec.users[id];
 	else u = $data.users[id] || $data.robots[id];
 
-	if (u && u.game) u.game.score += score;
+	if (u && u.game) {
+		// totalScore가 있으면 서버 점수로 동기화 (봇 점수 비주얼 버그 수정)
+		if (typeof totalScore === 'number') {
+			u.game.score = totalScore;
+		} else {
+			u.game.score += score;
+		}
+	}
 }
 function drawObtainedScore($uc, $sc) {
 	$uc.append($sc);
@@ -2078,7 +2130,7 @@ function roundEnd(result, data) {
 		if ($data._replay) {
 			o = $rec.users[r.id];
 		} else {
-			o = $data.users[r.id];
+			o = $data.users[r.id] || $data.robots[r.id];
 		}
 		if (!o) {
 			o = NULL_USER;
@@ -2574,7 +2626,9 @@ function processWord(word, _mean, _theme, _wcs) {
 	return $R;
 }
 function getCharText(char, subChar, wordLength) {
-	var res = char + (subChar ? ("(" + subChar + ")") : "");
+	// subChar가 파이프로 구분된 경우 콤마로 표시
+	var displaySubChar = subChar ? subChar.split('|').join(', ') : null;
+	var res = char + (displaySubChar ? ("(" + displaySubChar + ")") : "");
 
 	if (wordLength) res += "<label class='jjo-display-word-length'>(" + wordLength + ")</label>";
 
@@ -2764,8 +2818,14 @@ function chatBalloon(text, id, flag) {
 	$("#cb-" + id).remove();
 	var offset = ((flag & 2) ? $("#game-user-" + id) : $("#room-user-" + id)).offset();
 	var img = (flag == 2) ? "chat-balloon-bot" : "chat-balloon-tip";
-	var $obj = $("<div>").addClass("chat-balloon")
-		.attr('id', "cb-" + id)
+	var $obj = $("<div>").addClass("chat-balloon");
+	var targetWidth = 0;
+	if ((flag & 2) && $data.room && $data.room.game && $data.room.game.seq && $data.room.game.seq.length > 8) {
+		$obj.addClass("small-balloon");
+		var $target = $("#game-user-" + id);
+		if ($target.length) targetWidth = $target.width();
+	}
+	$obj.attr('id', "cb-" + id)
 		.append($("<div>").addClass("jt-image " + img))
 	[(flag == 2) ? 'prepend' : 'append']($("<h4>").text(text));
 	var ot, ol;
@@ -2776,6 +2836,15 @@ function chatBalloon(text, id, flag) {
 	else if (flag == 2) ot = 35 - $obj.height(), ol = -2;
 	else if (flag == 3) ot = 5, ol = 210;
 	else ot = 40, ol = 110;
+
+	if (targetWidth) {
+		$obj.width(targetWidth);
+		// Adjust left offset explicitly to align because width changed? 
+		// Original 'ol = -2' relies on 123px width centering or overflow. 
+		// If width matches card, left should be offset.left (ol=0).
+		ol = 0;
+	}
+
 	$obj.css({ top: offset.top + ot, left: offset.left + ol });
 	addTimeout(function () {
 		$obj.animate({ 'opacity': 0 }, 500, function () { $obj.remove(); });
@@ -2809,7 +2878,7 @@ function chat(profile, msg, from, timestamp) {
 		requestProfile(profile.id);
 	});
 	$stage.chatLog.append($item = $item.clone());
-	$item.append($("<div>").addClass("expl").css('font-weight', "normal").html("#" + (profile.id || "").substr(0, 5)));
+	$item.append($("<div>").addClass("expl").css('font-weight', "normal").html("#" + String(profile.id || "").substr(0, 5)));
 
 	if (link = msg.match(/https?:\/\/[\w\.\?\/&#%=-_\+]+/g)) {
 		msg = $msg.html();

@@ -130,8 +130,8 @@ block Middle
 			div#comm-friends
 		div.dialog-bar.tail-button
 			button#comm-friend-add= L('friendAdd')
-	+Dialog('LeaderboardDiag', 300, 450, L('leaderboard'))
-		div.dialog-bar(style='height: 350px;'): table#ranking(style='text-align: center;')
+	+Dialog('LeaderboardDiag', 300, 440, L('leaderboard'))
+		div.dialog-bar(style='height: 340px;'): table#ranking(style='text-align: center;')
 			thead(style='font-weight: bold; background-color: #DDDDDD;'): tr
 				td(width=30) #
 				td(width=55)= L('LEVEL')
@@ -160,7 +160,7 @@ block Middle
 			h4(style='width: 100%; height: 20px;')#quick-queue
 		div.dialog-bar.tail-button
 			button#quick-ok= L('OK')
-	+Dialog('RoomDiag', 300, 450)
+	+Dialog('RoomDiag', 400, 450)
 		div.dialog-bar
 			h4= L('roomTitle')
 			input#room-title(placeholder=(nick || L('guest'))+L('roomDefault'), maxlength=20)
@@ -210,7 +210,7 @@ block Middle
 				option(value=150)
 		div.dialog-bar(style='height: 120px;')
 			h4(style='height: 45px;')= L('misc')
-			div(style='float: left; width: 200px;')
+			div(style='float: left; width: 300px;')
 				- for(var i in locals.OPTIONS)
 					+GameOption(i, 'room')
 			div.dialog-opt#room-injpick-panel
@@ -271,7 +271,7 @@ block Middle
 			input#ai-preferred-char(type='text', maxlength='1', style='width: 50px; text-align: center;')
 		div.dialog-bar.tail-button
 			button#practice-ok= L('OK')
-	+Dialog('ResultDiag', 400, 420, L('gameResult'), true)
+	+Dialog('ResultDiag', 400, 545, L('gameResult'), true)
 		div.result-board
 		div.result-me
 			div.result-me-score

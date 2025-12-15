@@ -75,7 +75,7 @@ $lib.Daneo.turnEnd = function (id, data) {
 	var hi;
 
 	$data._turnSound.stop();
-	addScore(id, data.score);
+	addScore(id, data.score, data.totalScore);
 	clearInterval($data._tTime);
 	if (data.ok) {
 		clearTimeout($data._fail);

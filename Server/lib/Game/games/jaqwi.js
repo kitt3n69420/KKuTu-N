@@ -147,7 +147,8 @@ exports.submit = function (client, text) {
 			ok: true,
 			value: text,
 			score: score,
-			bonus: 0
+			bonus: 0,
+			totalScore: client.game.score
 		}, true);
 		client.invokeWordPiece(text, 0.9);
 		while (my.game.meaned < my.game.hint.length) {

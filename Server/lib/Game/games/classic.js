@@ -33,15 +33,15 @@ const PREFERRED_CHAR_PROB = [0.6, 0.7, 0.8, 0.9, 1.0];
 const RIEUL_TO_NIEUN = [4449, 4450, 4457, 4460, 4462, 4467];
 const RIEUL_TO_IEUNG = [4451, 4455, 4456, 4461, 4466, 4469];
 const NIEUN_TO_IEUNG = [4455, 4461, 4466, 4469];
-const PRIORITY_ATTACK_CHARS = ["렁", "듈", "븐", "튬", "쾃", "럿", "럄", "듐", "픔", "뮴", "읃", "읓", "읔", "읕", "읖", "읗", "냑", "녘"];
-const PRIORITY_ATTACK_CHARS_MANNER = ["릇", "륨", "늄", "럴", "텝", "슭", "읒", "픈", "깟", "왑", "켓", "븨", "껏"];
+const PRIORITY_ATTACK_CHARS = ["렁", "듈", "븐", "튬", "쾃", "럿", "듐", "픔", "뮴", "읃", "읓", "읔", "읕", "읖", "읗", "냑", "녘"];
+const PRIORITY_ATTACK_CHARS_MANNER = ["릇", "륨", "늄", "럴", "텝", "슭", "픈", "깟", "왑", "켓", "븨", "껏"];
 const PRIORITY_KAP_ATTACK_CHARS = ["녈", "맞", "흰", "뉸", "뒷", "헛", "붉", "뻐", "첫", "룍", "뇩", "넓", "홑", "맆", "렾", "녚", "갯", "받", "뉼", "앉", "높", "롶", "돼", "윗", "넙", "랼", "된", "뾰", "햇", "엑", "좁", "굳", "왼", "뻔", "빤", "륽", "늙", "뺑", "엎", "같", "띾", "꺾", "닫", "랕", "뙤", "돋", "쨍", "씽", "꽈", "귓", "므", "쌩", "샐", "잦", "섞", "덮", "맏", "얽", "왱", "긁", "짧", "걷", "헥", "잿"];
 const PRIORITY_KAP_ATTACK_CHARS_MANNER = ["겉", "쩔", "떠", "녑", "훌", "숫", "붙", "곧", "랒", "쫄", "쏠", "녓", "갸", "콧", "갖", "썰", "뻥", "삥", "쩌", "뗑", "꺄", "쐐", "헝", "갤", "촬", "옵", "찡", "믿", "줴", "촐", "놓", "쓴", "맑", "칡", "핸", "힌", "싀", "깁", "씀", "뭍"];
 const DUBANG = ["괙", "귁", "껙", "꿕", "뀍", "늡", "릅", "돨", "똴", "뙁", "뛸", "뜩", "띡", "띨", "멫", "몇", "뱍", "뷩", "뷩", "븩", "뽓", "뿅", "솰", "쏼", "었", "쟘", "좍", "좜", "좸", "줅", "줍", "쥄", "쫙", "챱", "홱"]
-const DUBANG_KAP = ["넓", "앉", "높", "깊", "된", "뾰", "짧", "덮", "꺾", "돋", "얕", "잦", "굵", "걷", "얽", "잿", "묻", "읽", "펩", "흩", "핫", "갤", "캘"];
+const DUBANG_KAP = ["뒷", "쌩", "빤", "핫", "갤", "캘", "왱"];
 const PRIORITY_ATTACK_CHARS_EN = ["ght", "ock", "ick", "ird", "ert", "ork", "eck", "nds", "uck", "ond", "lue", "lls", "elt", "rds", "arp", "uff", "erm", "irl", "ilt", "ilk", "ods", "cks", "ays", "iff", "ett", "olt", "ors", "erb", "ohn", "erk", "awk", "nks", "irs", "irm", "urd", "ilm", "nue", "rks", "arf", "nyx", "erd", "ryx", "olk", "itt", "rys", "gie", "url", "nck", "ils", "avy", "ynx", "ews", "mie", "irk", "cht", "cue", "ulb", "onk", "elp", "urk", "ldt", "aws"];
 const PRIORITY_ATTACK_CHARS_MANNER_EN = ["ack", "ark", "ics", "orm", "ers", "ify", "ons", "omb", "ngs", "ump", "owl", "ift", "urn", "rie", "eek", "oud", "elf", "irt", "ild", "kie", "itz", "rld", "iew", "thm", "els", "awl", "awn", "rue", "yew", "eft", "oft", "ffy", "uld", "hew", "ivy", "rtz", "egs", "tew", "oux", "rns", "ebs", "tua", "tyl", "efy", "ohm", "omp", "bbs", "ltz", "ggs", "oek", "xxv", "few", "wyn", "orr", "utz", "enn", "ebb", "hns", "ogs", "ruz", "ibs", "uhr", "nyl"];
-
+const AVOID_FD = ["렁", "냑", "럿", "럴"];
 var AttackCache = {};
 
 function getAttackChars(my) {
@@ -50,6 +50,7 @@ function getAttackChars(my) {
 		if (!my.opts.injeong) state |= 1;
 		if (my.opts.strict) state |= 2;
 		if (my.opts.loanword) state |= 4;
+		if (my.opts.freedueum) state |= 8;
 
 		var isRev = Const.GAME_TYPE[my.mode] == "KAP";
 		var col = isRev ? `end_${state}` : `start_${state}`;
@@ -66,7 +67,11 @@ function getAttackChars(my) {
 		var priorityList = isRev ? PRIORITY_KAP_ATTACK_CHARS : PRIORITY_ATTACK_CHARS;
 
 		var p1 = new Promise(function (res1) {
-			DB.kkutu_stats.find([col, { $lte: 2 }]).sort({ [col]: 1 }).limit(50).on(function (docs) {
+			DB.kkutu_stats.find([col, {
+				$lte: 2
+			}]).sort({
+				[col]: 1
+			}).limit(50).on(function (docs) {
 				res1(docs ? docs.map(d => d._id) : []);
 			}, null, () => res1([]));
 		});
@@ -75,7 +80,9 @@ function getAttackChars(my) {
 			// Fetch stats for priority chars to check if they are valid for this mode (e.g. have non-zero count, or at least exist)
 			// Actually, even if count is high, user wants to prioritize them.
 			// But we should verify they exist in stats (valid chars).
-			DB.kkutu_stats.find(['_id', { $in: priorityList }]).on(function (docs) {
+			DB.kkutu_stats.find(['_id', {
+				$in: priorityList
+			}]).on(function (docs) {
 				res2(docs ? docs.map(d => d._id) : []);
 			}, null, () => res2([]));
 		});
@@ -139,6 +146,7 @@ exports.getTitle = function () {
 			eng = "[\\u" + ja.toString(16) + "-\\u" + (ja + 587).toString(16) + "]$";
 			break;
 	}
+
 	function tryTitle(h) {
 		if (h > 50) {
 			R.go(EXAMPLE);
@@ -166,6 +174,7 @@ exports.getTitle = function () {
 			}
 		});
 	}
+
 	function checkTitle(title) {
 		var R = new Lizard.Tail();
 		var i, list = [];
@@ -176,17 +185,86 @@ exports.getTitle = function () {
 		return R;
 		*/
 		if (title == null) {
-			R.go(EXAMPLE);
-		} else {
-			len = title.length;
-			for (i = 0; i < len; i++) list.push(getAuto.call(my, title[i], getSubChar.call(my, title[i]), 1));
+			R.go(false);
+			return R;
+		}
 
-			Lizard.all(list).then(function (res) {
-				for (i in res) if (!res[i]) return R.go(EXAMPLE);
+		// Unknown Word 규칙: 모든 단어 허용 (검증 건너뜀)
+		if (my.opts.unknown) {
+			R.go(title);
+			return R;
+		}
 
-				return R.go(title);
+		// 조건 1: 고유 음절 검증
+		// 제시어의 고유한 음절 수가 제시어 글자수보다 2 이상 차이나면 부적절
+		var uniqueChars = new Set(title.split('')).size;
+		if (title.length - uniqueChars >= 2) {
+			console.log(`[TITLE] Rejected "${title}": Too many duplicate chars (${uniqueChars} unique / ${title.length} total)`);
+			R.go(false);
+			return R;
+		}
+
+		// 조건 2: 연결 가능 단어 개수 검증 (kkutu_stats 사용)
+		len = title.length;
+		for (i = 0; i < len; i++) {
+			list.push(countTitleWords.call(my, title[i], getSubChar.call(my, title[i])));
+		}
+
+		Lizard.all(list).then(function (res) {
+			for (i = 0; i < res.length; i++) {
+				if (res[i] < 5) {
+					console.log(`[TITLE] Rejected "${title}": Char "${title[i]}" has only ${res[i]} connectable words`);
+					return R.go(false);
+				}
+			}
+			return R.go(title);
+		});
+
+		return R;
+	}
+	// 제시어 글자별 연결 가능 단어 수 조회 (kkutu_stats 사용)
+	function countTitleWords(char, subChar) {
+		var my = this;
+		var R = new Lizard.Tail();
+		var gameType = Const.GAME_TYPE[my.mode];
+		var isRev = gameType === 'KAP';
+
+		// State 비트마스크 계산 (stats_helper.js와 동일)
+		var state = 0;
+		if (!my.opts.injeong) state |= 1;
+		if (my.opts.strict) state |= 2;
+		if (my.opts.loanword) state |= 4;
+		if (my.opts.freedueum) state |= 8;
+
+		var col = isRev ? `end_${state}` : `start_${state}`;
+
+		// char와 subChar 모두에서 시작하는 단어를 합산
+		// subChar가 파이프로 구분된 경우 분리하여 처리
+		var chars = [char];
+		if (subChar) {
+			subChar.split('|').forEach(function (sc) {
+				if (sc && sc !== char && chars.indexOf(sc) === -1) chars.push(sc);
 			});
 		}
+
+		var pending = chars.length;
+		var totalCount = 0;
+
+		chars.forEach(function (c) {
+			DB.kkutu_stats.findOne(['_id', c]).on(function (doc) {
+				if (doc && doc[col]) {
+					totalCount += doc[col];
+				}
+				if (--pending === 0) {
+					R.go(totalCount);
+				}
+			}, null, function () {
+				if (--pending === 0) {
+					R.go(totalCount);
+				}
+			});
+		});
+
 		return R;
 	}
 	tryTitle(10);
@@ -258,11 +336,12 @@ exports.turnStart = function (force) {
 		seq: force ? my.game.seq : undefined
 	}, true);
 	my.game.turnTimer = setTimeout(my.turnEnd, Math.min(my.game.roundTime, my.game.turnTime + 100));
-	if (si = my.game.seq[my.game.turn]) if (si.robot) {
-		si._done = [];
-		if (si.data) delete si.data.retryCount; // Reset Retry Count for new turn
-		my.readyRobot(si);
-	}
+	if (si = my.game.seq[my.game.turn])
+		if (si.robot) {
+			si._done = [];
+			if (si.data) delete si.data.retryCount; // Reset Retry Count for new turn
+			my.readyRobot(si);
+		}
 };
 exports.turnEnd = function () {
 	var my = this;
@@ -278,10 +357,11 @@ exports.turnEnd = function () {
 	}
 	clearTimeout(my.game.turnTimer);
 	my.game.late = true;
-	if (target) if (target.game) {
-		score = Const.getPenalty(my.game.chain, target.game.score);
-		target.game.score += score;
-	}
+	if (target)
+		if (target.game) {
+			score = Const.getPenalty(my.game.chain, target.game.score);
+			target.game.score += score;
+		}
 	getAuto.call(my, my.game.char, my.game.subChar, 0).then(function (w) {
 		my.byMaster('turnEnd', {
 			ok: false,
@@ -348,7 +428,8 @@ exports.submit = function (client, text) {
 	var mgt = my.game.seq[my.game.turn];
 
 	if (!mgt) return;
-	if (!mgt.robot) if (mgt != client.id) return;
+	if (!mgt.robot)
+		if (mgt != client.id) return;
 	if (!my.game.char) return;
 
 	if (!isChainable(text, my.mode, my.game.char, my.game.subChar)) return client.chat(text);
@@ -364,7 +445,10 @@ exports.submit = function (client, text) {
 				}, ROBOT_START_DELAY[client.level]);
 				return;
 			}
-			client.publish('turnError', { code: 409, value: text }, true);
+			client.publish('turnError', {
+				code: 409,
+				value: text
+			}, true);
 
 			// Retry Logic for Bot: If candidates exhausted (duplicate word), try Tier 2.
 			// Logic: Tier 1 Fail -> Retry (Count 1)
@@ -388,6 +472,7 @@ exports.submit = function (client, text) {
 
 	l = my.rule.lang;
 	my.game.loading = true;
+
 	function onDB($doc) {
 		if (!my.game.chain) return;
 		var preChar = getChar.call(my, text);
@@ -421,7 +506,8 @@ exports.submit = function (client, text) {
 					wc: $doc.type,
 					score: score,
 					bonus: (my.game.mission === true) ? score - my.getScore(text, t, true) : 0,
-					baby: $doc.baby
+					baby: $doc.baby,
+					totalScore: client.game.score // 봇 점수 동기화용
 				}, true);
 				if (my.game.mission === true) {
 					my.game.mission = getMission(my.rule.lang);
@@ -444,7 +530,10 @@ exports.submit = function (client, text) {
 				if (w) approved();
 				else {
 					my.game.loading = false;
-					client.publish('turnError', { code: firstMove ? 402 : 403, value: text }, true);
+					client.publish('turnError', {
+						code: firstMove ? 402 : 403,
+						value: text
+					}, true);
 					if (client.robot) {
 						my.readyRobot(client);
 					}
@@ -453,9 +542,13 @@ exports.submit = function (client, text) {
 			});
 			else approved();
 		}
+
 		function denied(code) {
 			my.game.loading = false;
-			client.publish('turnError', { code: code || 404, value: text }, true);
+			client.publish('turnError', {
+				code: code || 404,
+				value: text
+			}, true);
 			if (my.opts.one) my.turnEnd();
 			else if (client.robot && text.indexOf("T.T") == -1 && !Const.ROBOT_DEFEAT_MESSAGES.includes(text) && text.indexOf("..") == -1 && text.indexOf("??") == -1 && !(text.length === 3 && text[0] === text[1] && text[1] === text[2])) {
 				setTimeout(function () {
@@ -498,18 +591,29 @@ exports.submit = function (client, text) {
 			denied();
 		}
 	}
+
 	function isChainable() {
 		var type = Const.GAME_TYPE[my.mode];
-		var char = my.game.char, subChar = my.game.subChar;
+		var char = my.game.char,
+			subChar = my.game.subChar;
 		var l = char.length;
+		// subChar를 배열로 분리 (파이프로 구분된 경우)
+		var subChars = subChar ? subChar.split('|') : [];
 
 		if (!text) return false;
 		if (text.length <= l) return false;
 		if (my.game.wordLength && text.length != my.game.wordLength) return false;
-		if (type == "KAP") return (text.slice(-1) == char) || (text.slice(-1) == subChar);
+		if (type == "KAP") {
+			var lastChar = text.slice(-1);
+			return (lastChar == char) || subChars.some(function (sc) {
+				return lastChar == sc;
+			});
+		}
 
 		if (text.indexOf(char) === 0) return true;
-		if (subChar && text.indexOf(subChar) === 0) return true;
+		if (subChars.some(function (sc) {
+			return text.indexOf(sc) === 0;
+		})) return true;
 
 		return false;
 	}
@@ -526,10 +630,11 @@ exports.getScore = function (text, delay, ignoreMission) {
 	score = Const.getPreScore(text, my.game.chain, tr);
 
 	if (my.game.dic[text]) score *= 15 / (my.game.dic[text] + 15);
-	if (!ignoreMission) if (arr = text.match(new RegExp(my.game.mission, "g"))) {
-		score += score * 0.5 * arr.length;
-		my.game.mission = true;
-	}
+	if (!ignoreMission)
+		if (arr = text.match(new RegExp(my.game.mission, "g"))) {
+			score += score * 0.5 * arr.length;
+			my.game.mission = true;
+		}
 	return Math.round(score);
 };
 exports.readyRobot = function (robot) {
@@ -551,11 +656,12 @@ exports.readyRobot = function (robot) {
 		return new Promise(function (resolve, reject) {
 			if (!char) return resolve(0);
 
-			// Determine State Index (0-7)
+			// Determine State Index (0-15, bit 3 = freeDueum)
 			var state = 0;
 			if (!my.opts.injeong) state |= 1;
 			if (my.opts.strict) state |= 2;
 			if (my.opts.loanword) state |= 4;
+			if (my.opts.freedueum) state |= 8;
 
 			var col = isRev ? `end_${state}` : `start_${state}`;
 
@@ -591,6 +697,7 @@ exports.readyRobot = function (robot) {
 			if (!my.opts.injeong) state |= 1;
 			if (my.opts.strict) state |= 2;
 			if (my.opts.loanword) state |= 4;
+			if (my.opts.freedueum) state |= 8;
 
 			var col = isRev ? `start_${state}` : `end_${state}`;
 
@@ -632,7 +739,10 @@ exports.readyRobot = function (robot) {
 					// Priority 3: y, k, g (Tier 2)
 					["y", "k", "g"].forEach(c => t2Set.add(c));
 
-					var data = { tier1: Array.from(t1Set), tier2: Array.from(t2Set) };
+					var data = {
+						tier1: Array.from(t1Set),
+						tier2: Array.from(t2Set)
+					};
 					AttackCache[key] = {
 						time: Date.now(),
 						data: data
@@ -647,7 +757,9 @@ exports.readyRobot = function (robot) {
 					// Let's assume Hard <= 2 for now based on user request "One-shot words".
 					var threshold = 2; // Can be adjusted
 					// Use Regex for length check (custom DB doesn't support .where)
-					DB.kkutu_stats.find([col, { $lte: threshold }], ['_id', /^...$/]).limit(5000).on(function (docs3) {
+					DB.kkutu_stats.find([col, {
+						$lte: threshold
+					}], ['_id', /^...$/]).limit(5000).on(function (docs3) {
 						res1(docs3 || []);
 					}, null, () => res1([]));
 				});
@@ -655,7 +767,9 @@ exports.readyRobot = function (robot) {
 				var p2 = new Promise(function (res2) {
 					// 2. Fetch 2-letter candidates with Low Start Count
 					var threshold = 2;
-					DB.kkutu_stats.find([col, { $lte: threshold }], ['_id', /^..$/]).limit(2000).on(function (docs2) {
+					DB.kkutu_stats.find([col, {
+						$lte: threshold
+					}], ['_id', /^..$/]).limit(2000).on(function (docs2) {
 						res2(docs2 || []);
 					}, null, () => res2([]));
 				});
@@ -703,7 +817,10 @@ exports.readyRobot = function (robot) {
 						}
 					});
 
-					var data = { tier1: Array.from(t1Set), tier2: Array.from(t2Set) };
+					var data = {
+						tier1: Array.from(t1Set),
+						tier2: Array.from(t2Set)
+					};
 					AttackCache[key] = {
 						time: Date.now(),
 						data: data
@@ -720,13 +837,19 @@ exports.readyRobot = function (robot) {
 
 			var p1 = new Promise(function (res1) {
 				// Increase limit to cover ALL killers <= 3
-				DB.kkutu_stats.find([col, { $lte: 3 }]).sort({ [col]: 1 }).limit(3000).on(function (docs) {
+				DB.kkutu_stats.find([col, {
+					$lte: 3
+				}]).sort({
+					[col]: 1
+				}).limit(3000).on(function (docs) {
 					res1(docs || []);
 				}, null, () => res1([]));
 			});
 
 			var p2 = new Promise(function (res2) {
-				DB.kkutu_stats.find(['_id', { $in: fetchList }]).on(function (docs) {
+				DB.kkutu_stats.find(['_id', {
+					$in: fetchList
+				}]).on(function (docs) {
 					res2(docs || []);
 				}, null, () => res2([]));
 			});
@@ -783,7 +906,10 @@ exports.readyRobot = function (robot) {
 				var t1List = Array.from(t1Set);
 				var t2List = Array.from(t2Set);
 
-				var data = { tier1: t1List, tier2: t2List };
+				var data = {
+					tier1: t1List,
+					tier2: t2List
+				};
 
 				AttackCache[key] = {
 					time: Date.now(),
@@ -811,12 +937,24 @@ exports.readyRobot = function (robot) {
 			len = my.game.wordLength - 1;
 		} else {
 			switch (level) {
-				case 0: len = Math.floor(Math.random() * 2) + 1; break; // 1~2
-				case 1: len = Math.floor(Math.random() * 3) + 2; break; // 2~4
-				case 2: len = Math.floor(Math.random() * 5) + 4; break; // 4~8
-				case 3: len = Math.floor(Math.random() * 9) + 8; break; // 8~16
-				case 4: len = Math.floor(Math.random() * 17) + 16; break; // 16~32
-				default: len = Math.floor(Math.random() * 5) + 2; break;
+				case 0:
+					len = Math.floor(Math.random() * 2) + 1;
+					break; // 1~2
+				case 1:
+					len = Math.floor(Math.random() * 3) + 2;
+					break; // 2~4
+				case 2:
+					len = Math.floor(Math.random() * 5) + 4;
+					break; // 4~8
+				case 3:
+					len = Math.floor(Math.random() * 9) + 8;
+					break; // 8~16
+				case 4:
+					len = Math.floor(Math.random() * 17) + 16;
+					break; // 16~32
+				default:
+					len = Math.floor(Math.random() * 5) + 2;
+					break;
 			}
 		}
 
@@ -956,7 +1094,9 @@ exports.readyRobot = function (robot) {
 				}
 			}
 
-			var query = [['_id', new RegExp(regex)]];
+			var query = [
+				['_id', new RegExp(regex)]
+			];
 			var flagMask = 0;
 
 			// Apply Rule Filters
@@ -976,7 +1116,9 @@ exports.readyRobot = function (robot) {
 				}
 
 				if (flagMask > 0) {
-					query.push(['flag', { '$nand': flagMask }]);
+					query.push(['flag', {
+						'$nand': flagMask
+					}]);
 				}
 			} else {
 				// English rules
@@ -1074,7 +1216,9 @@ exports.readyRobot = function (robot) {
 		var limitMultiplier = 1;
 		if (strategy === "ATTACK" || strategy === "LONG") limitMultiplier = 4; // Fetch 4x for advanced selection (2x Freq + 2x Random)
 
-		var sort = (strategy === "LONG") ? { 'length(_id)': -1 } : null;
+		var sort = (strategy === "LONG") ? {
+			'length(_id)': -1
+		} : null;
 
 		getAuto.call(my, my.game.char, my.game.subChar, 2, limitMultiplier, sort).then(function (list) {
 			console.log(`[BOT] executeStrategy: ${strategy}, fetched ${list ? list.length : 0} words`);
@@ -1135,7 +1279,8 @@ exports.readyRobot = function (robot) {
 							var mSlice = mList ? mList.slice(0, Math.ceil(mList.length * heuristicRatio)) : [];
 							var allP = new Set(pSlice.concat(mSlice));
 
-							var p = [], n = [];
+							var p = [],
+								n = [];
 							list.forEach(c => {
 								if (allP.has(c)) p.push(c);
 								else n.push(c);
@@ -1171,6 +1316,18 @@ exports.readyRobot = function (robot) {
 											list = shuffle(safe).concat(shuffle(unsafe));
 										} else {
 											console.log(`[BOT] Dubang Avoidance: No safe words.`);
+											list = shuffle(unsafe);
+										}
+									} else if (Const.GAME_TYPE[my.mode] === "KSH" && my.opts.freedueum) {
+										// 자유 두음법칙 + KSH: AVOID_FD 글자로 끝나는 단어 회피
+										var safe = list.filter(w => !AVOID_FD.includes(w._id.slice(-1)));
+										var unsafe = list.filter(w => AVOID_FD.includes(w._id.slice(-1)));
+
+										if (safe.length > 0) {
+											console.log(`[BOT] FreeDueum Avoidance (KSH): Picking from ${safe.length} safe words.`);
+											list = shuffle(safe).concat(shuffle(unsafe));
+										} else {
+											console.log(`[BOT] FreeDueum Avoidance (KSH): No safe words.`);
 											list = shuffle(unsafe);
 										}
 									} else if (Const.GAME_TYPE[my.mode] === "KAP" && my.game.seq && my.game.seq.length === 2) {
@@ -1216,6 +1373,12 @@ exports.readyRobot = function (robot) {
 								if (heuristicSet.size > 0) {
 									killers = killers.filter(k => heuristicSet.has(k));
 								}
+							}
+
+							// 자유 두음법칙 + KSH: AVOID_FD 글자 제외
+							if ((Const.GAME_TYPE[my.mode] === "KSH" || Const.GAME_TYPE[my.mode] === "KKT") && my.opts.freedueum) {
+								killers = killers.filter(k => !AVOID_FD.includes(k));
+								if (killers.length === 0) return nextStepCallback();
 							}
 
 							var subsetSize = Math.max(10, Math.floor(150 * heuristicRatio));
@@ -1291,7 +1454,9 @@ exports.readyRobot = function (robot) {
 
 							console.log(`[BOT] ATTACK KO: Optimized Query with ${subset.length} random killers...`);
 
-							var query = [['_id', new RegExp(regex)]];
+							var query = [
+								['_id', new RegExp(regex)]
+							];
 							var flagMask = ((my.game.history && my.game.history.length > 0) ? Const.KOR_FLAG.DELETED : 0);
 
 							if (!my.opts.injeong) flagMask |= Const.KOR_FLAG.INJEONG;
@@ -1304,7 +1469,9 @@ exports.readyRobot = function (robot) {
 								query.push(['type', Const.KOR_GROUP]);
 							}
 
-							if (flagMask > 0) query.push(['flag', { '$nand': flagMask }]);
+							if (flagMask > 0) query.push(['flag', {
+								'$nand': flagMask
+							}]);
 
 							DB.kkutu['ko'].find(...query).limit(200).on(function (list) {
 								processList(list, nextStepCallback);
@@ -1369,8 +1536,13 @@ exports.readyRobot = function (robot) {
 									if (isEKT) {
 										// EKT Specific Logic (from getChar)
 										if (my.opts.middle) {
-											if (len % 2 !== 0) { idx = Math.floor(len / 2); rStart = idx - 1; }
-											else { idx = len / 2; rStart = idx - 1; }
+											if (len % 2 !== 0) {
+												idx = Math.floor(len / 2);
+												rStart = idx - 1;
+											} else {
+												idx = len / 2;
+												rStart = idx - 1;
+											}
 										} else if (my.opts.second) {
 											// EKT Second:
 											// if len >= 4: Link = text.slice(len - 4, len - 1) -> Start len-4, Len 3
@@ -1418,13 +1590,7 @@ exports.readyRobot = function (robot) {
 									var midLen = Math.max(0, my.game.wordLength - 2);
 									middlePattern = `.{${midLen}}`;
 								} else if (Const.GAME_TYPE[my.mode] === "EKT") {
-									// EKT: Ban 3-letter words (Min Len 4)
-									// Since EKT killers are 3-char, usually leads to 4+ chars.
-									// But just in case, enforce min length.
-									// 1(adc) + Mid + 3(killer) = 4+ -> Mid >= 0.
-									// If Mid is ".*", it covers 0.
-									// So EKT is fine, but if we want to be strict about "No 3 letter words":
-									// Regex doesn't need change as 1+3=4.
+
 								}
 
 								regex = `^(${adc})${middlePattern}(${killerPattern})$`;
@@ -1432,7 +1598,9 @@ exports.readyRobot = function (robot) {
 
 							console.log(`[BOT] ATTACK EN: Optimized Query with ${subset.length} random killers...`);
 
-							var query = [['_id', new RegExp(regex)]];
+							var query = [
+								['_id', new RegExp(regex)]
+							];
 							query.push(['_id', Const.ENG_ID]);
 
 							DB.kkutu['en'].find(...query).limit(200).on(function (list) {
@@ -1447,7 +1615,7 @@ exports.readyRobot = function (robot) {
 
 						var startTier1 = true;
 						if (my.game.chain.length === 0 || my.opts.manner) {
-							console.log("[BOT] First Turn or Manner Mode detected. Skipping Tier 1 (Hard Attack). (Killer word unavailable)");
+							console.log("[BOT] First Turn or Manner Mode detected. Skipping Tier 1 (Killer word unavailable).");
 							startTier1 = false;
 						} else if (Math.random() < tier2StartProb) {
 							console.log(`[BOT] Stochastic Skip: Skipping Tier 1 with probability ${tier2StartProb.toFixed(2)}.`);
@@ -1484,7 +1652,9 @@ exports.readyRobot = function (robot) {
 
 				} else {
 					// NORMAL strategy
-					list.sort(function (a, b) { return b.hit - a.hit; });
+					list.sort(function (a, b) {
+						return b.hit - a.hit;
+					});
 					var top = list.slice(0, ROBOT_CANDIDATE_LIMIT[level]);
 					var rest = list.slice(ROBOT_CANDIDATE_LIMIT[level]);
 					list = shuffle(top).concat(rest);
@@ -1525,6 +1695,7 @@ exports.readyRobot = function (robot) {
 		text = secondMsg;
 		after();
 	}
+
 	function pickList(list) {
 		if (list && list.length > 0) {
 			robot.data.candidates = list;
@@ -1545,11 +1716,13 @@ exports.readyRobot = function (robot) {
 			} else denied();
 		} else denied();
 	}
+
 	function after() {
 		delay += text.length * ROBOT_TYPE_COEF[level];
 		robot._done.push(text);
 		setTimeout(my.turnRobot, delay, robot, text);
 	}
+
 	function getWishList(list) {
 		var R = new Lizard.Tail();
 		var wz = [];
@@ -1558,30 +1731,39 @@ exports.readyRobot = function (robot) {
 		for (i in list) wz.push(getWish(list[i]));
 		Lizard.all(wz).then(function ($res) {
 			if (!my.game.chain) return;
-			$res.sort(function (a, b) { return a.length - b.length; });
+			$res.sort(function (a, b) {
+				return a.length - b.length;
+			});
 
 			if (my.opts.manner || !my.game.chain.length) {
-				while (res = $res.shift()) if (res.length) break;
+				while (res = $res.shift())
+					if (res.length) break;
 			} else res = $res.shift();
 			R.go(res ? res.char : null);
 		});
 		return R;
 	}
+
 	function getWish(char) {
 		var R = new Lizard.Tail();
 
 		DB.kkutu[my.rule.lang].find(['_id', new RegExp(isRev ? `.${char}$` : `^${char}.`)]).limit(10).on(function ($res) {
-			R.go({ char: char, length: $res.length });
+			R.go({
+				char: char,
+				length: $res.length
+			});
 		});
 		return R;
 	}
 };
+
 function getMission(l) {
 	var arr = (l == "ko") ? Const.MISSION_ko : Const.MISSION_en;
 
 	if (!arr) return "-";
 	return arr[Math.floor(Math.random() * arr.length)];
 }
+
 function getAuto(char, subc, type, limit, sort) {
 	/* type
 		0 무작위 단어 하나
@@ -1628,15 +1810,24 @@ function getAuto(char, subc, type, limit, sort) {
 			produce();
 		}
 	});
+
 	function produce() {
-		var aqs = [['_id', new RegExp(adv)]];
+		var aqs = [
+			['_id', new RegExp(adv)]
+		];
 		var aft;
 		var lst;
 
-		if (!my.opts.injeong) aqs.push(['flag', { '$nand': Const.KOR_FLAG.INJEONG }]);
+		if (!my.opts.injeong) aqs.push(['flag', {
+			'$nand': Const.KOR_FLAG.INJEONG
+		}]);
 		if (my.rule.lang == "ko") {
-			if (my.opts.loanword) aqs.push(['flag', { '$nand': Const.KOR_FLAG.LOANWORD }]);
-			if (my.opts.strict) aqs.push(['type', Const.KOR_STRICT], ['flag', { $lte: 3 }]);
+			if (my.opts.loanword) aqs.push(['flag', {
+				'$nand': Const.KOR_FLAG.LOANWORD
+			}]);
+			if (my.opts.strict) aqs.push(['type', Const.KOR_STRICT], ['flag', {
+				$lte: 3
+			}]);
 			else aqs.push(['type', Const.KOR_GROUP]);
 		} else {
 			aqs.push(['_id', Const.ENG_ID]);
@@ -1663,14 +1854,19 @@ function getAuto(char, subc, type, limit, sort) {
 		if (sort) raiser.sort(sort);
 		raiser.limit((bool ? 1 : 123) * (limit || 1)).on(function ($md) {
 			forManner($md);
-			if (my.game.chain) aft($md.filter(function (item) { return !my.game.chain.includes(item); }));
+			if (my.game.chain) aft($md.filter(function (item) {
+				return !my.game.chain.includes(item);
+			}));
 			else aft($md);
 		});
+
 		function forManner(list) {
 			if (my.opts.unknown) return;
+			if (!char) return; // char가 없으면 DB 업데이트 건너뜀
 			lst = list;
 			MAN.upsert(['_id', char]).set([key, lst.length ? true : false]).on(null, null, onFail);
 		}
+
 		function onFail() {
 			MAN.createColumn(key, "boolean").on(function () {
 				forManner(lst);
@@ -1679,22 +1875,28 @@ function getAuto(char, subc, type, limit, sort) {
 	}
 	return R;
 }
+
 function keyByOptions(opts) {
 	var arr = [];
 
 	if (opts.injeong) arr.push('X');
 	if (opts.loanword) arr.push('L');
 	if (opts.strict) arr.push('S');
+	if (opts.freedueum) arr.push('F');
 	return arr.join('');
 }
+
 function shuffle(arr) {
 	var i, r = [];
 
 	for (i in arr) r.push(arr[i]);
-	r.sort(function (a, b) { return Math.random() - 0.5; });
+	r.sort(function (a, b) {
+		return Math.random() - 0.5;
+	});
 
 	return r;
 }
+
 function getChar(text) {
 	var my = this;
 	var type = Const.GAME_TYPE[my.mode];
@@ -1740,20 +1942,25 @@ function getChar(text) {
 	}
 
 	switch (type) {
-		case 'EKT': return text.slice(text.length - 3);
+		case 'EKT':
+			return text.slice(text.length - 3);
 		case 'EKK':
 		case 'ESH':
 		case 'KKT':
-		case 'KSH': return text.slice(-1);
-		case 'KAP': return text.charAt(0);
+		case 'KSH':
+			return text.slice(-1);
+		case 'KAP':
+			return text.charAt(0);
 	}
 };
+
 function getSubChar(char) {
 	var my = this;
 	var r;
 	var c = char.charCodeAt();
 	var k;
 	var ca, cb, cc;
+	var isKAP = Const.GAME_TYPE[my.mode] === "KAP";
 
 	switch (Const.GAME_TYPE[my.mode]) {
 		case "EKT":
@@ -1773,33 +1980,75 @@ function getSubChar(char) {
 			if (char.length > 2) r = char.slice(1);
 			break;
 		case "EKK":
-		case "KKT": case "KSH": case "KAP":
+		case "KKT":
+		case "KSH":
+		case "KAP":
 			k = c - 0xAC00;
 			if (k < 0 || k > 11171) break;
 			ca = [Math.floor(k / 28 / 21), Math.floor(k / 28) % 21, k % 28];
 			cb = [ca[0] + 0x1100, ca[1] + 0x1161, ca[2] + 0x11A7];
 			cc = false;
-			if (cb[0] == 4357) { // ㄹ에서 ㄴ, ㅇ
-				cc = true;
-				if (RIEUL_TO_NIEUN.includes(cb[1])) cb[0] = 4354;
-				else if (RIEUL_TO_IEUNG.includes(cb[1])) cb[0] = 4363;
-				else cc = false;
-			} else if (cb[0] == 4354) { // ㄴ에서 ㅇ
-				if (NIEUN_TO_IEUNG.indexOf(cb[1]) != -1) {
-					cb[0] = 4363;
+
+			// Helper to build a character from initial, medial, final
+			function buildChar(initial, medial, final) {
+				return String.fromCharCode(((initial * 21) + medial) * 28 + final + 0xAC00);
+			}
+
+			if (my.opts.freedueum) {
+				// 자유 두음법칙: 모음 조건 무시, 두 번째 변환까지 모두 포함
+				var results = [];
+				var medial = ca[1];
+				var final = ca[2];
+
+				if (isKAP) {
+					// 앞말잇기: ㅇ→ㄴ|ㄹ, ㄴ→ㄹ
+					if (cb[0] === 4363) { // ㅇ -> ㄴ, ㄹ
+						results.push(buildChar(2, medial, final)); // ㄴ (initial index 2)
+						results.push(buildChar(5, medial, final)); // ㄹ (initial index 5)
+					} else if (cb[0] === 4354) { // ㄴ -> ㄹ
+						results.push(buildChar(5, medial, final)); // ㄹ (initial index 5)
+					}
+				} else {
+					// 끝말잇기/쿵쿵따: ㄹ→ㄴ|ㅇ, ㄴ→ㅇ
+					if (cb[0] === 4357) { // ㄹ -> ㄴ, ㅇ
+						results.push(buildChar(2, medial, final)); // ㄴ (initial index 2)
+						results.push(buildChar(11, medial, final)); // ㅇ (initial index 11)
+					} else if (cb[0] === 4354) { // ㄴ -> ㅇ
+						results.push(buildChar(11, medial, final)); // ㅇ (initial index 11)
+					}
+				}
+
+				if (results.length > 0) {
+					r = results.join("|");
+				}
+			} else {
+				// 기존 두음법칙 로직 (모음 조건 적용)
+				if (cb[0] == 4357) { // ㄹ에서 ㄴ, ㅇ
 					cc = true;
+					if (RIEUL_TO_NIEUN.includes(cb[1])) cb[0] = 4354;
+					else if (RIEUL_TO_IEUNG.includes(cb[1])) cb[0] = 4363;
+					else cc = false;
+				} else if (cb[0] == 4354) { // ㄴ에서 ㅇ
+					if (NIEUN_TO_IEUNG.indexOf(cb[1]) != -1) {
+						cb[0] = 4363;
+						cc = true;
+					}
+				}
+				if (cc) {
+					cb[0] -= 0x1100;
+					cb[1] -= 0x1161;
+					cb[2] -= 0x11A7;
+					r = String.fromCharCode(((cb[0] * 21) + cb[1]) * 28 + cb[2] + 0xAC00);
 				}
 			}
-			if (cc) {
-				cb[0] -= 0x1100; cb[1] -= 0x1161; cb[2] -= 0x11A7;
-				r = String.fromCharCode(((cb[0] * 21) + cb[1]) * 28 + cb[2] + 0xAC00);
-			}
 			break;
-		case "ESH": default:
+		case "ESH":
+		default:
 			break;
 	}
 	return r;
 }
+
 function getReverseDueumChars(char) {
 	var c = char.charCodeAt() - 0xAC00;
 	if (c < 0 || c > 11171) return [];

@@ -1461,7 +1461,7 @@ iframe {
 
 .result-board {
 	width: 400px;
-	height: 260px;
+	height: 385px;
 }
 
 .result-board-item {
@@ -2208,7 +2208,11 @@ iframe {
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;
+	align-items: center;
+	/* Center children (score pill) */
 	position: relative;
+	container-type: inline-size;
+	/* Enable container queries for dynamic font sizing */
 }
 
 /* Ensure animation works by forcing border color when active */
@@ -2281,21 +2285,46 @@ iframe {
 	width: 100%;
 }
 
+.chat-balloon {
+	position: absolute;
+	width: 123px;
+	color: #111111;
+	z-index: 30;
+	/* Increased to be above player cards */
+}
+
+/* Small Mode Chat Balloon */
+.chat-balloon.small-balloon {
+	width: 90px;
+	/* Match typical small card width */
+}
+
+.chat-balloon.small-balloon h4 {
+	width: 100%;
+	/* Auto width fit */
+	font-size: 11px;
+	/* Smaller text */
+	border-radius: 8px;
+}
+
 .game-body.small-mode .game-user-level {
 	display: block !important;
 	/* Force show */
 	position: absolute;
-	bottom: 5px;
-	left: 5px;
+	top: 2px;
+	/* Moved to top to avoid score overlap */
+	left: 2px;
 	width: 15px;
 	height: 15px;
 	background-size: contain;
+	z-index: 2;
+	/* Ensure above image if needed */
 }
 
 .game-body.small-mode .game-user-name {
 	width: 100%;
-	font-size: min(16px, 1.4vw);
-	/* Increased size */
+	font-size: min(14px, 15cqw);
+	/* Dynamic size based on card width */
 	padding-left: 0;
 	text-align: center;
 	height: auto;
@@ -2305,14 +2334,21 @@ iframe {
 }
 
 .game-body.small-mode .game-user-score {
-	width: 100%;
-	font-size: min(20px, 1.8vw);
-	/* Slightly reduced from 22px/2.0vw */
-	padding-left: 20px;
-	/* Space for level icon */
+	width: 85%;
+	/* Proportional width as requested */
+	display: block;
+	font-size: min(16px, 18cqw);
+	/* Dynamic size based on card width */
+	padding: 0px 0px;
+	/* Remove side padding as width provides space */
+	margin: 0 auto 2px auto;
+	/* Center horizontally */
 	text-align: center;
-	/* Center score */
-	margin-bottom: 2px;
+	border-radius: 10px;
+	white-space: nowrap;
+	overflow: hidden;
+	/* Ensure it stays within bounds */
+	text-overflow: ellipsis;
 }
 
 .game-body.small-mode .game-user-score-char {

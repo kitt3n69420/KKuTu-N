@@ -51,7 +51,9 @@ exports.OPTIONS = {
 	'sch': { name: "Second" },
 	'vow': { name: "Vowel" },
 	'lng': { name: "Long" },
-	'unl': { name: "Unlimited" }
+	'unl': { name: "Unlimited" },
+	'sur': { name: "Survival" },
+	'fdu': { name: "FreeDueum" }
 
 };
 exports.ROBOT_TIMEOUT_MESSAGES = [ // 다른 플레이어가 게임오버되면 봇이 보내는 메시지
@@ -116,7 +118,7 @@ exports.RULE = {
 	'EKT': {
 		lang: "en",
 		rule: "Classic",
-		opts: ["man", "ext", "mis", "unk", "one", "sur", "ret", "mid", "sch"],
+		opts: ["man", "ext", "mis", "unk", "one", "ret", "mid", "sch"],
 		time: 1,
 		ai: true,
 		big: false,
@@ -134,7 +136,7 @@ exports.RULE = {
 	'ESH': {
 		lang: "en",
 		rule: "Classic",
-		opts: ["ext", "mis", "unk", "one", "sur", "ret", "mid", "sch"],
+		opts: ["ext", "mis", "unk", "one", "ret", "mid", "sch"],
 		time: 1,
 		ai: true,
 		big: false,
@@ -143,7 +145,7 @@ exports.RULE = {
 	'KKT': {
 		lang: "ko",
 		rule: "Classic",
-		opts: ["man", "ext", "mis", "loa", "str", "k32", "unk", "one", "sur", "ret", "mid", "sch"],
+		opts: ["man", "ext", "mis", "loa", "str", "k32", "unk", "one", "ret", "mid", "sch", "fdu"],
 		time: 1,
 		ai: true,
 		big: false,
@@ -153,7 +155,7 @@ exports.RULE = {
 	'KSH': {
 		lang: "ko",
 		rule: "Classic",
-		opts: ["man", "ext", "mis", "loa", "str", "unk", "one", "sur", "ret", "mid", "sch"],
+		opts: ["man", "ext", "mis", "loa", "str", "unk", "one", "ret", "mid", "sch", "fdu"],
 		time: 1,
 		ai: true,
 		big: false,
@@ -199,7 +201,7 @@ exports.RULE = {
 	'KAP': {
 		lang: "ko",
 		rule: "Classic",
-		opts: ["man", "ext", "mis", "loa", "str", "unk", "one", "sur", "ret", "mid", "sch"],
+		opts: ["man", "ext", "mis", "loa", "str", "unk", "one", "ret", "mid", "sch", "fdu"],
 		time: 1,
 		ai: true,
 		big: false,
@@ -209,7 +211,7 @@ exports.RULE = {
 	'HUN': {
 		lang: "ko",
 		rule: "Hunmin",
-		opts: ["ext", "mis", "loa", "str", "one", "sur", "ret"],
+		opts: ["ext", "mis", "loa", "str", "one", "ret"],
 		time: 1,
 		ai: true,
 		big: false,
@@ -218,7 +220,7 @@ exports.RULE = {
 	'KDA': {
 		lang: "ko",
 		rule: "Daneo",
-		opts: ["ijp", "mis", "trp", "one", "sur", "ret"],
+		opts: ["ijp", "mis", "trp", "one", "ret"],
 		time: 1,
 		ai: true,
 		ewq: false
@@ -226,7 +228,7 @@ exports.RULE = {
 	'EDA': {
 		lang: "en",
 		rule: "Daneo",
-		opts: ["ijp", "mis", "trp", "one", "sur", "ret"],
+		opts: ["ijp", "mis", "trp", "one", "ret"],
 		time: 1,
 		ai: true,
 		big: false,
@@ -353,4 +355,13 @@ exports.BOT_LEVEL_NAMES = {
 	"2": "중수",
 	"3": "고수",
 	"4": "초고수"
+};
+
+exports.BOT_ITEM_WEIGHTS = {
+	// "item_id": weight (default: 10)
+	"nekomimi": 20,
+	"cuspidal": 3,
+	"black_mask": 3,
+	"white_mask": 3
+
 };

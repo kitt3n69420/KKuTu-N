@@ -377,4 +377,10 @@ TypeError: Cannot read properties of undefined (reading 'length')
 TypeError: my.publish is not a function
     at Timeout._onTimeout (C:\myKKuTu\KKuTu-master\Server\lib\Game\kkutu.js:925:8)
     at listOnTimeout (node:internal/timers:588:17)
-    at process.processTimers (node:internal/timers:523:7)
+    at process.processTimers (node:internal/timers:523:7):8496 [2025. 12. 13. 오후 9:53:05] ERROR: TypeError: Cannot read properties of undefined (reading 'length')
+TypeError: Cannot read properties of undefined (reading 'length')
+    at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\classic.js:1449:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5):8496 [2025. 12. 15. 오전 3:00:09] ERROR: TypeError: Cannot read properties of undefined (reading 'length')
+TypeError: Cannot read properties of undefined (reading 'length')
+    at C:\myKKuTu\KKuTu-master\Server\lib\Game\games\classic.js:1449:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)

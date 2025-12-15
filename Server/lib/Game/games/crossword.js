@@ -182,7 +182,8 @@ exports.submit = function (client, text, data) {
 				target: client.id,
 				pos: data,
 				value: text,
-				score: score
+				score: score,
+				totalScore: client.game.score
 			});
 			client.invokeWordPiece(text, 1.2);
 			if (--my.game.numQ < 1) {

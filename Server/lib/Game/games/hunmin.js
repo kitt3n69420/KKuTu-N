@@ -151,7 +151,8 @@ exports.submit = function (client, text, data) {
 						theme: $doc.theme,
 						wc: $doc.type,
 						score: score,
-						bonus: (my.game.mission === true) ? score - my.getScore(text, t, true) : 0
+						bonus: (my.game.mission === true) ? score - my.getScore(text, t, true) : 0,
+						totalScore: client.game.score
 					}, true);
 					if (my.game.mission === true) {
 						my.game.mission = getMission(my.game.theme);

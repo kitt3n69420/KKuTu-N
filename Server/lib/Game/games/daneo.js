@@ -163,7 +163,8 @@ exports.submit = function (client, text, data) {
 					wc: $doc.type,
 					score: score,
 					bonus: (my.game.mission === true) ? score - my.getScore(text, t, true) : 0,
-					baby: $doc.baby
+					baby: $doc.baby,
+					totalScore: client.game.score
 				}, true);
 				if (my.game.mission === true) {
 					my.game.mission = getMission(my.rule.lang);

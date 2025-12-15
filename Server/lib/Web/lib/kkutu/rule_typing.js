@@ -104,7 +104,7 @@ $lib.Typing.turnEnd = function (id, data) {
 		} else if ($data._spectate) {
 			playSound('mission');
 		}
-		addScore(id, data.score);
+		addScore(id, data.score, data.totalScore);
 		drawObtainedScore($uc, $sc);
 		updateScore(id, getScore(id));
 	} else {

@@ -88,7 +88,7 @@ $lib.Classic.turnEnd = function (id, data) {
 	var hi;
 
 	if ($data._turnSound) $data._turnSound.stop();
-	addScore(id, data.score);
+	addScore(id, data.score, data.totalScore);
 	clearInterval($data._tTime);
 	if (data.ok) {
 		checkFailCombo();

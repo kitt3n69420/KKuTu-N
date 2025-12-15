@@ -75,12 +75,12 @@ exports.run = function (Server, page) {
 		var id = req.query.id;
 
 		if (id) {
-			MainDB.redis.getSurround(id, 15).then(function ($body) {
+			MainDB.redis.getSurround(id, 12).then(function ($body) {
 				res.send($body);
 			});
 		} else {
 			if (isNaN(pg)) pg = 0;
-			MainDB.redis.getPage(pg, 15).then(function ($body) {
+			MainDB.redis.getPage(pg, 12).then(function ($body) {
 				res.send($body);
 			});
 		}

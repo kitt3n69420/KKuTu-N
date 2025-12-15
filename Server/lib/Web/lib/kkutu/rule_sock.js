@@ -54,7 +54,7 @@ $lib.Sock.turnEnd = function (id, data) {
 			playSound('mission');
 		}
 		$lib.Sock.drawDisplay();
-		addScore(id, data.score);
+		addScore(id, data.score, data.totalScore);
 		updateScore(id, getScore(id));
 		drawObtainedScore($uc, $sc);
 	} else {

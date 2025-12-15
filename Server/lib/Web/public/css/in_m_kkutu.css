@@ -1319,9 +1319,15 @@ body {
 	float: left;
 }
 
+#ResultDiag {
+	height: 550px !important;
+	/* Increased height for longer list */
+}
+
 .result-board {
 	width: 100%;
-	height: 260px;
+	height: 390px;
+	/* Increased to fit ~12 players */
 }
 
 .result-board-item {

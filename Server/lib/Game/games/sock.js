@@ -141,7 +141,8 @@ exports.submit = function (client, text, data) {
 			client.publish('turnEnd', {
 				target: client.id,
 				value: text,
-				score: score
+				score: score,
+				totalScore: client.game.score
 			}, true);
 			client.invokeWordPiece(text, 1.1);
 		} else {

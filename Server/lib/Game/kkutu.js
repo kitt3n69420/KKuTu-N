@@ -132,7 +132,13 @@ exports.Robot = function (target, place, level, customName, personality, preferr
 	// Randomly equip items
 	(function () {
 		var count = Math.floor(Math.random() * 5) + 2; // 2 ~ 6
-		var shuffled = Const.AVAIL_EQUIP.slice().sort(() => Math.random() - 0.5);
+		var shuffled = Const.AVAIL_EQUIP.slice().sort(function (a, b) {
+			var wa = Const.BOT_ITEM_WEIGHTS[a] || 10;
+			var wb = Const.BOT_ITEM_WEIGHTS[b] || 10;
+
+			// Weighted random shuffle: Math.random() ^ (1 / weight) descending
+			return Math.pow(Math.random(), 1 / wb) - Math.pow(Math.random(), 1 / wa);
+		});
 		var i, group;
 
 		for (i = 0; i < count; i++) {
@@ -164,7 +170,12 @@ exports.Robot = function (target, place, level, customName, personality, preferr
 		return {
 			id: my.id,
 			robot: true,
-			game: my.game,
+			game: {
+				score: my.game.score || 0,
+				team: my.game.team || 0,
+				bonus: my.game.bonus || 0,
+				item: my.game.item ? my.game.item.slice() : []
+			},
 			data: my.data,
 			place: my.place,
 			target: target,
@@ -210,6 +221,7 @@ exports.Robot = function (target, place, level, customName, personality, preferr
 		my.publish('chat', { value: msg });
 	};
 	my.profile = {
+		id: my.id,
 		image: "/img/kkutu/robot.png",
 		title: generateBotName(level)
 	};
@@ -1114,49 +1126,59 @@ exports.Room = function (room, channel) {
 		}
 
 
+
 		// 95% chance to use a custom bot name from the dictionary
 		if (Math.random() < 0.95) {
-			// Step 1: Pick first word (2~15 chars)
-			var q1 = "SELECT _id FROM kkutu_ko WHERE LENGTH(_id) BETWEEN 2 AND 15 ORDER BY RANDOM() LIMIT 1";
-			DB.kkutu['ko'].direct(q1, function (err, res) {
-				if (my.players.length >= my.limit) return;
+			if (Math.random() < 0.5) {
+				// Logic 1: Single word 2~7 chars
+				var q = "SELECT _id FROM kkutu_ko WHERE LENGTH(_id) BETWEEN 2 AND 7 ORDER BY RANDOM() LIMIT 1";
+				DB.kkutu['ko'].direct(q, function (err, res) {
+					if (my.players.length >= my.limit) return;
+					var name;
 
-				var w1, len1, rem;
+					if (!err && res && res.rows && res.rows.length > 0) {
+						name = res.rows[0]._id;
+					}
 
-				if (err || !res || !res.rows || res.rows.length === 0) {
-					// Fallback if query fails
-					my.players.push(new exports.Robot(null, my.id, 2));
+					// Fallback to default if name is undefined (handled by Robot constructor if null/undefined is passed as customName, but explicit check or passing it is fine)
+					my.players.push(new exports.Robot(null, my.id, 2, name));
 					my.export();
-					return;
-				}
+					my.checkJamsu();
+				});
+			} else {
+				// Logic 2: Two words, combined length max 7
+				// Step 1: First word 2~5 chars
+				var q1 = "SELECT _id FROM kkutu_ko WHERE LENGTH(_id) BETWEEN 2 AND 5 ORDER BY RANDOM() LIMIT 1";
+				DB.kkutu['ko'].direct(q1, function (err, res) {
+					if (my.players.length >= my.limit) return;
 
-				w1 = res.rows[0]._id;
-				len1 = w1.length;
-				rem = 15 - len1;
+					if (err || !res || !res.rows || res.rows.length === 0) {
+						my.players.push(new exports.Robot(null, my.id, 2));
+						my.export();
+						my.checkJamsu();
+						return;
+					}
 
-				// Step 2: Check if we can/should pick a second word
-				// Condition: Remaining space >= 2 AND 50% chance
-				if (rem >= 2 && Math.random() < 0.5) {
+					var w1 = res.rows[0]._id;
+					var rem = 7 - w1.length;
+
+					// Step 2: Second word 2~rem chars
+					// Since w1 is 2~5, rem is 5~2. So rem >= 2 is valid.
 					var q2 = `SELECT _id FROM kkutu_ko WHERE LENGTH(_id) BETWEEN 2 AND ${rem} ORDER BY RANDOM() LIMIT 1`;
 					DB.kkutu['ko'].direct(q2, function (err2, res2) {
 						if (my.players.length >= my.limit) return;
 
-						var customName = w1;
+						var name = w1;
 						if (!err2 && res2 && res2.rows && res2.rows.length > 0) {
-							customName += res2.rows[0]._id;
+							name += res2.rows[0]._id;
 						}
-						// Create valid robot with combined name (or just w1 if query failed)
-						my.players.push(new exports.Robot(null, my.id, 2, customName));
+
+						my.players.push(new exports.Robot(null, my.id, 2, name));
 						my.export();
 						my.checkJamsu();
 					});
-				} else {
-					// Just the first word
-					my.players.push(new exports.Robot(null, my.id, 2, w1));
-					my.export();
-					my.checkJamsu();
-				}
-			});
+				});
+			}
 		} else {
 			my.players.push(new exports.Robot(null, my.id, 2));
 			my.export();
@@ -1333,12 +1355,12 @@ exports.Room = function (room, channel) {
 		// 팀 검사
 		if (teams) {
 			if (teams[0].length) {
-				if (teams[1].length > 1 || teams[2].length > 1 || teams[3].length > 1 || teams[4].length > 1) return 418;
+				// if (teams[1].length > 1 || teams[2].length > 1 || teams[3].length > 1 || teams[4].length > 1) return 418;
 			} else {
 				for (i = 1; i < 5; i++) {
 					if (j = teams[i].length) {
 						if (t) {
-							if (t != j) return 418;
+							// if (t != j) return 418;
 						} else t = j;
 						l++;
 						avTeam.push(i);
@@ -1417,15 +1439,79 @@ exports.Room = function (room, channel) {
 				}
 				if (my.players[i]) my.game.seq.push(my.players[i]);
 			}
-			if (my._avTeam) {
-				o = my.game.seq.length;
-				j = my._avTeam.length;
-				my.game.seq = [];
-				for (i = 0; i < o; i++) {
-					var v = my._teams[my._avTeam[i % j]].shift();
+			// Check if we have any teams (1~4)
+			var hasTeams = false;
+			if (my._teams) {
+				for (var k = 1; k <= 4; k++) {
+					if (my._teams[k] && my._teams[k].length > 0) {
+						hasTeams = true;
+						break;
+					}
+				}
+			}
 
-					if (!v) continue;
-					my.game.seq[i] = v;
+			if (hasTeams && my._teams) {
+				// Stride Scheduling for Team Placement
+				var allGroups = [];
+				var totalPlayers = 0;
+				for (var k = 0; k < 5; k++) {
+					if (my._teams[k] && my._teams[k].length > 0) {
+						allGroups.push({ id: k, count: my._teams[k].length });
+						// Shuffle players within the team/pool for random order
+						my._teams[k] = shuffle(my._teams[k]);
+						totalPlayers += my._teams[k].length;
+					}
+				}
+
+				// Sort groups by count descending
+				allGroups.sort(function (a, b) { return b.count - a.count; });
+
+				// Prepare slots
+				var placement = new Array(totalPlayers);
+				var available = [];
+				for (var i = 0; i < totalPlayers; i++) available.push(i);
+
+				// Place teams
+				for (var g = 0; g < allGroups.length; g++) {
+					var group = allGroups[g];
+					if (group.count === 0) continue;
+
+					var step = available.length / group.count;
+					var indicesToTake = [];
+
+					for (var i = 0; i < group.count; i++) {
+						var targetIdx = Math.floor(i * step);
+						// Safety check
+						if (targetIdx >= available.length) targetIdx = available.length - 1;
+
+						var realIdx = available[targetIdx];
+						placement[realIdx] = group.id;
+						indicesToTake.push(realIdx);
+					}
+
+					// Remove used indices from available
+					available = available.filter(function (val) { return indicesToTake.indexOf(val) === -1; });
+				}
+
+				// Fill game sequence
+				my.game.seq = [];
+				for (var i = 0; i < totalPlayers; i++) {
+					var tid = placement[i];
+					// Fallback if null (shouldn't happen)
+					if (tid === undefined || tid === null) {
+						// Find any remaining
+						for (var k = 0; k < 5; k++) {
+							if (my._teams[k] && my._teams[k].length > 0) {
+								tid = k;
+								break;
+							}
+						}
+					}
+
+					if (tid !== undefined && my._teams[tid].length > 0) {
+						var p = my._teams[tid].shift();
+						my.game.seq.push(p);
+					}
 				}
 			} else {
 				my.game.seq = shuffle(my.game.seq);
@@ -1499,24 +1585,114 @@ exports.Room = function (room, channel) {
 			} else if (o.team) teams[o.team].push(o.game.score);
 		}
 		for (i = 1; i < 5; i++) if (o = teams[i].length) teams[i] = [o, teams[i].reduce(function (p, item) { return p + item; }, 0)];
+
+		// 1. Calculate Human Count first (for XP calculation)
+		var humanCount = 0;
 		for (i in my.game.seq) {
-			o = DIC[my.game.seq[i]];
+			o = DIC[my.game.seq[i]] || my.game.seq[i];
+			if (!o) continue;
+			if (!o.robot) humanCount++;
+		}
+
+		// 2. Build Result List (Including Bots)
+		for (i in my.game.seq) {
+			o = DIC[my.game.seq[i]] || my.game.seq[i];
 			if (!o) continue;
 			sumScore += o.game.score;
-			res.push({ id: o.id, score: o.team ? teams[o.team][1] : o.game.score, dim: o.team ? teams[o.team][0] : 1 });
+
+			var actualTeam = o.robot ? o.game.team : o.team;
+
+			res.push({
+				id: o.id,
+				score: o.game.score, // Display Score: Individual
+				teamScore: actualTeam ? teams[actualTeam][1] : o.game.score, // Sorting Score: Team Total
+				dim: actualTeam ? teams[actualTeam][0] : 1,
+				robot: o.robot,
+				team: actualTeam
+			});
 		}
-		res.sort(function (a, b) { return b.score - a.score; });
+
+		// Sort: 1. Team Score (Desc), 2. Team ID (Group ties), 3. Individual Score (Desc)
+		res.sort(function (a, b) {
+			if (a.teamScore != b.teamScore) return b.teamScore - a.teamScore;
+			var tA = a.team || 0;
+			var tB = b.team || 0;
+			if (tA != tB) return tB - tA;
+			return b.score - a.score;
+		});
 		rl = res.length;
 
+		// 3. Assign Ranks and Calculate Rewards
+		var currentHumanRank = 0;
+		var userRankMap = {};
+
+		// First pass: Determine ranks (Strict 1..N order as per request "A, B, E, D, C")
+		// User example implies distinct ranks for everyone based on list order.
+		// However, standard UI might expect shared ranks for ties.
+		// But in team mode per user description, A(5) and B(3) are separate entries.
+		// A is 1st, B is 2nd.
+		// Let's use simple index + 1 for rank, which guarantees valid unique ranks.
+		// If strict tie-handling is needed (e.g. same individual score in same team), they can share rank.
+		// Let's stick to standard pv check but use the sorting keys.
+
 		for (i in res) {
-			o = DIC[res[i].id];
-			if (pv == res[i].score) {
+			// Check if Identical (TeamScore AND TeamID AND IndividualScore)
+			// Actually just TeamScore and IndividualScore usually enough for Rank purposes if we ignore TeamID grouping for coloring
+			// But for "Ranking", usually unique is fine for now.
+			// Let's try standard tie-check on the primary sort key? 
+			// No, user wants A(5) > B(3). So rank 1 and 2.
+			// So Rank is purely based on the sorted list index usually?
+			// Let's keep it simple: Rank = Index.
+
+			// Wait, if I use index, ties in individual score get different ranks.
+			// e.g. A(5), B(5).
+			// If pv logic: A(1), B(1).
+			// Let's use individual score for pv check?
+			// But total ordering is TeamScore.
+
+			// Let's construct a "compareKey".
+			var key = res[i].teamScore + "_" + res[i].score;
+			if (pv == key) {
 				res[i].rank = res[Number(i) - 1].rank;
 			} else {
 				res[i].rank = Number(i);
 			}
-			pv = res[i].score;
-			rw = getRewards(my.mode, o.game.score / res[i].dim, o.game.bonus, res[i].rank, rl, sumScore);
+			pv = key;
+		}
+
+		// Second pass: Calculate human-specific ranks
+		// We need to re-sort or iterate carefully to determine "Human Rank"
+		// A simple way: Filter humans, sort by score, assign ranks.
+		var humanRes = res.filter(function (r) { return !r.robot; });
+		var h_pv = -1;
+		for (i in humanRes) {
+			if (h_pv == humanRes[i].score) {
+				humanRes[i].humanRank = humanRes[Number(i) - 1].humanRank;
+			} else {
+				humanRes[i].humanRank = Number(i);
+			}
+			h_pv = humanRes[i].score;
+			userRankMap[humanRes[i].id] = humanRes[i].humanRank;
+		}
+
+		for (i in res) {
+
+			// For bots, we don't need to do complex reward calc, but we need 'o'
+			if (res[i].robot) {
+				o = DIC[res[i].id] || my.players.find(function (p) { return p.id == res[i].id; });
+				if (o) {
+					users[o.id] = o.getData();
+				}
+				// Client requires 'reward' object to be present to render the row
+				res[i].reward = { score: 0, money: 0 };
+				continue;
+			}
+
+			o = DIC[res[i].id];
+			if (!o) continue; // Should not happen for non-robots
+			var myHumanRank = userRankMap[o.id];
+			rw = getRewards(my.mode, o.game.score / res[i].dim, o.game.bonus, myHumanRank, humanCount, sumScore);
+
 			rw.playTime = now - o.playAt;
 			o.applyEquipOptions(rw); // 착용 아이템 보너스 적용
 			if (my.opts.unknown) {

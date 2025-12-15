@@ -159,7 +159,8 @@ exports.submit = function (client, text) {
 			target: client.id,
 			ok: true,
 			value: text,
-			score: score
+			score: score,
+			totalScore: client.game.score
 		}, true);
 		client.invokeWordPiece(text, 0.5);
 	} else {

@@ -669,30 +669,55 @@ $(document).ready(function () {
 			ou: $("#only-unlock").is(":checked"),
 			sp: $("#sound-pack").val()
 		};
+
+		// localStorage에 볼륨 설정 저장
+		saveVolumeSettings({
+			bgmVolume: $data.BGMVolume,
+			effectVolume: $data.EffectVolume,
+			bgmMute: $data.opts.mb,
+			effectMute: $data.opts.me,
+			soundPack: $data.opts.sp
+		});
+
 		$.cookie('kks', encodeURIComponent(JSON.stringify($data.opts)));
 		$stage.dialog.setting.hide();
 	});
 	$("#mute-bgm").on('click', function () {
 		$data.muteBGM = !$data.muteBGM;
+		saveBGMMute($data.muteBGM); // localStorage에 즉시 저장
 		updateBGMVol();
 		send("option", { mb: $data.muteBGM, bv: $data.BGMVolume, me: $data.muteEff, ev: $data.EffectVolume });
 	});
 	$(".bgmVolume").on('input change', function () {
 		$data.BGMVolume = $(this).val() / 100;
+		saveBGMVolume($data.BGMVolume); // localStorage에 즉시 저장
 		updateBGMVol();
 	}).on('change', function () {
 		send("option", { mb: $data.muteBGM, bv: $data.BGMVolume, me: $data.muteEff, ev: $data.EffectVolume });
 	});
 	$("#mute-effect").on('click', function () {
 		$data.muteEff = !$data.muteEff;
+		saveEffectMute($data.muteEff); // localStorage에 즉시 저장
 		updateEffectVol();
 		send("option", { mb: $data.muteBGM, bv: $data.BGMVolume, me: $data.muteEff, ev: $data.EffectVolume });
 	});
 	$(".effectVolume").on('input change', function () {
 		$data.EffectVolume = $(this).val() / 100;
+		saveEffectVolume($data.EffectVolume); // localStorage에 즉시 저장
 		updateEffectVol();
 	}).on('change', function () {
 		send("option", { mb: $data.muteBGM, bv: $data.BGMVolume, me: $data.muteEff, ev: $data.EffectVolume });
+	});
+
+	// 사운드팩 변경 핸들러
+	$("#sound-pack").on('change', function () {
+		var selectedPack = $(this).val();
+		saveSoundPack(selectedPack); // localStorage에 즉시 저장
+
+		// 사운드팩 변경 시 페이지 새로고침 안내
+		if (confirm("사운드팩을 변경하려면 페이지를 새로고침해야 합니다. 지금 새로고침하시겠습니까?")) {
+			location.reload();
+		}
 	});
 	$stage.dialog.profileLevel.on('click', function (e) {
 		$("#PracticeDiag .dialog-title").html(L['robot']);
