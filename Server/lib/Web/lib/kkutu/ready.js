@@ -283,6 +283,7 @@ $(document).ready(function () {
 	AVAIL_EQUIP = $("#AVAIL_EQUIP").html().split(',');
 	RULE = JSON.parse($("#RULE").html());
 	OPTIONS = JSON.parse($("#OPTIONS").html());
+	GAME_CATEGORIES = JSON.parse($("#GAME_CATEGORIES").html());
 	MODE = Object.keys(RULE);
 	mobile = $("#mobile").html() == "true";
 	if (mobile) TICK = 200;
@@ -627,6 +628,43 @@ $(document).ready(function () {
 				$data._preQuick = true;
 				$("#room-" + i).trigger('click');
 			}
+		}
+	});
+	$("#room-category").on('change', function (e) {
+		var category = $(this).val();
+		var modeSelect = $("#room-mode");
+		var allowedModes = category === 'all' ? null : GAME_CATEGORIES[category].modes;
+
+		console.log("[Category Debug] Selected:", category);
+		console.log("[Category Debug] Allowed Modes:", allowedModes);
+		console.log("[Category Debug] MODE array:", MODE);
+		console.log("[Category Debug] Total Options found:", modeSelect.find("option").length);
+
+		// Filter modes based on category
+		modeSelect.find("option").each(function () {
+			var modeIndex = $(this).val();
+			var modeName = MODE[modeIndex];
+			var shouldShow = !allowedModes || !modeName || (allowedModes.indexOf(modeName) !== -1);
+
+			console.log("[Category Debug] Option:", modeIndex, modeName, shouldShow);
+			$(this).toggle(shouldShow);
+		});
+
+		// Hide empty optgroups
+		modeSelect.find("optgroup").each(function () {
+			var hasVisibleOptions = $(this).find("option").filter(function () {
+				return $(this).css('display') !== 'none';
+			}).length > 0;
+			$(this).toggle(hasVisibleOptions);
+		});
+
+		// Select first visible option
+		var firstVisible = modeSelect.find("option").filter(function () {
+			return $(this).css('display') !== 'none';
+		}).first();
+
+		if (firstVisible.length > 0) {
+			modeSelect.val(firstVisible.val()).trigger('change');
 		}
 	});
 	$("#room-mode").on('change', function (e) {

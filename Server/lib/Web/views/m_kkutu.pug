@@ -54,6 +54,7 @@ block Jungle
 	span#NICKNAME_LIMIT= locals.NICKNAME_LIMIT ? JSON.stringify(locals.NICKNAME_LIMIT) : "{}"
 	span#RULE= JSON.stringify(locals.RULE)
 	span#OPTIONS= JSON.stringify(locals.OPTIONS)
+	span#GAME_CATEGORIES= JSON.stringify(locals.GAME_CATEGORIES)
 	div#Yell
 	div#Loading= L('LOADING')
 	-
@@ -175,6 +176,13 @@ block Middle
 			h4= L('userLimit')
 			input#room-limit(type='number', min=2, max=8, step=1, value=8)
 		div.dialog-bar
+			h4= L('gameCategory')
+			select#room-category
+				option(value='all')= L('categoryAll')
+				option(value='classic')= L('categoryClassic')
+				option(value='quiz')= L('categoryQuiz')
+				option(value='other')= L('categoryOther')
+		div.dialog-bar
 			h4= L('gameMode')
 			select#room-mode
 				optgroup(label=L('mcKorean'))
@@ -182,8 +190,8 @@ block Middle
 					option(value=2)= L('modeKKT')
 					option(value=8)= L('modeKAP')
 					option(value=21)= L('modeKAK')
-					option(value=6)= L('modeKTY')
 					option(value=11)= L('modeKDA')
+					option(value=6)= L('modeKTY')
 					option(value=5)= L('modeKCW')
 					option(value=13)= L('modeKSS')
 					option(value=4)= L('modeCSQ')
@@ -197,8 +205,8 @@ block Middle
 					option(value=0)= L('modeEKT')
 					option(value=9)= L('modeEAP')
 					option(value=22)= L('modeEAK')
-					option(value=7)= L('modeETY')
 					option(value=12)= L('modeEDA')
+					option(value=7)= L('modeETY')
 					option(value=14)= L('modeESS')
 					option(value=20)= L('modeEPQ')
 					option(value=18)= L('modeEFR')

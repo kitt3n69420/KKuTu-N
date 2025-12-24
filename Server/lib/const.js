@@ -331,6 +331,20 @@ exports.RULE = {
 	}
 
 };
+exports.GAME_CATEGORIES = {
+	'classic': {
+		name: 'GameCategoryClassic',
+		modes: ['KKT', 'KSH', 'KAP', 'KAK', 'EKT', 'ESH', 'EKK', 'EAP', 'EAK']
+	},
+	'quiz': {
+		name: 'GameCategoryQuiz',
+		modes: ['CSQ', 'KCW', 'KSS', 'ESS', 'KPQ', 'EPQ', 'KSC']
+	},
+	'other': {
+		name: 'GameCategoryOther',
+		modes: ['KDA', 'EDA', 'KTY', 'ETY', 'HUN', 'KFR', 'EFR']
+	}
+};
 exports.getPreScore = function (text, chain, tr) {
 	return 2 * (Math.pow(5 + 7 * (text || "").length, 0.74) + 0.88 * (chain || []).length) * (0.5 + 0.5 * tr);
 };
