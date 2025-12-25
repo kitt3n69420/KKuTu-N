@@ -146,7 +146,7 @@ DB.ready = function () {
 			}
 		}
 	});
-	Server.listen(80); //HTTP 접속
+	Server.listen(Const.MAIN_PORTS[0]); //HTTP 접속
 	if (Const.IS_SECURED) {
 		const options = Secure();
 		https.createServer(options, Server).listen(443);
@@ -160,7 +160,7 @@ Const.MAIN_PORTS.forEach(function (v, i) {
 	} else {
 		protocol = 'ws';
 	}
-	gameServers[i] = new GameClient(KEY, `${protocol}://${GLOBAL.GAME_SERVER_HOST}:${v}/${KEY}`);
+	gameServers[i] = new GameClient(KEY, `${protocol}://${GLOBAL.GAME_SERVER_HOST}:${v + 30}/${KEY}`);
 });
 function GameClient(id, url) {
 	var my = this;
@@ -282,7 +282,7 @@ Server.get("/", function (req, res) {
 			'_page': "kkutu",
 			'_script': viewName == "kkutu" ? "game_kkutu" : undefined,
 			'_id': id,
-			'PORT': Const.MAIN_PORTS[server],
+			'PORT': Const.MAIN_PORTS[server] + 30,
 			'HOST': req.hostname,
 			'PROTOCOL': Const.IS_SECURED ? 'wss' : 'ws',
 			'TEST': req.query.test,

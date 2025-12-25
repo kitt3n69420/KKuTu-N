@@ -41,7 +41,7 @@ if (Cluster.isMaster) {
 
 	for (i = 0; i < CPU; i++) {
 		chan = i + 1;
-		channels[chan] = Cluster.fork({ SERVER_NO_FORK: true, KKUTU_PORT: Const.MAIN_PORTS[SID] + 416 + i, CHANNEL: chan });
+		channels[chan] = Cluster.fork({ SERVER_NO_FORK: true, KKUTU_PORT: Const.MAIN_PORTS[SID] + 30 + 1 + i, CHANNEL: chan });
 	}
 	Cluster.on('exit', function (w) {
 		for (i in channels) {
@@ -51,9 +51,9 @@ if (Cluster.isMaster) {
 			}
 		}
 		JLog.error(`Worker @${chan} ${w.process.pid} died`);
-		channels[chan] = Cluster.fork({ SERVER_NO_FORK: true, KKUTU_PORT: Const.MAIN_PORTS[SID] + 416 + (chan - 1), CHANNEL: chan });
+		channels[chan] = Cluster.fork({ SERVER_NO_FORK: true, KKUTU_PORT: Const.MAIN_PORTS[SID] + 30 + 1 + (chan - 1), CHANNEL: chan });
 	});
-	process.env['KKUTU_PORT'] = Const.MAIN_PORTS[SID];
+	process.env['KKUTU_PORT'] = Const.MAIN_PORTS[SID] + 30;
 	require("./master.js").init(SID.toString(), channels);
 } else {
 	require("./slave.js");
