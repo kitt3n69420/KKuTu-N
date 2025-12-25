@@ -2110,100 +2110,100 @@ $lib.Daneo.turnEnd = function (id, data) {
 
 $lib.Free = {};
 $lib.Free.roundReady = function (data) {
-    var i, len = $data.room.game.title.length;
+	var i, len = $data.room.game.title.length;
 
-    clearBoard();
-    $data._roundTime = $data.room.time * 1000;
+	clearBoard();
+	$data._roundTime = $data.room.time * 1000;
 
-    // Display "Free Mode" or similar. 
-    // Since there is no specific theme, maybe just "아무거나" (Anything)
-    $stage.game.display.html($data._char = "&lt;" + (L && L['anything'] ? L['anything'] : "아무거나") + "&gt;");
+	// Display "Free Mode" or similar. 
+	// Since there is no specific theme, maybe just "아무거나" (Anything)
+	$stage.game.display.html($data._char = "&lt;" + (L && L['anything'] ? L['anything'] : "아무거나") + "&gt;");
 
-    $stage.game.chain.show().html($data.chain = 0);
-    if ($data.room.opts.mission) {
-        $stage.game.items.show().css('opacity', 1).html($data.mission = data.mission);
-    }
-    drawRound(data.round);
-    playSound('round_start');
-    recordEvent('roundReady', { data: data });
+	$stage.game.chain.show().html($data.chain = 0);
+	if ($data.room.opts.mission) {
+		$stage.game.items.show().css('opacity', 1).html($data.mission = data.mission);
+	}
+	drawRound(data.round);
+	playSound('round_start');
+	recordEvent('roundReady', { data: data });
 };
 
 $lib.Free.turnStart = function (data) {
-    $data.room.game.turn = data.turn;
-    if (data.seq) $data.room.game.seq = data.seq;
-    if (!($data._tid = $data.room.game.seq[data.turn])) return;
-    if ($data._tid.robot) $data._tid = $data._tid.id;
-    data.id = $data._tid;
+	$data.room.game.turn = data.turn;
+	if (data.seq) $data.room.game.seq = data.seq;
+	if (!($data._tid = $data.room.game.seq[data.turn])) return;
+	if ($data._tid.robot) $data._tid = $data._tid.id;
+	data.id = $data._tid;
 
-    // Keep the display as is (set in roundReady)
-    $stage.game.display.html($data._char);
+	// Keep the display as is (set in roundReady)
+	$stage.game.display.html($data._char);
 
-    $("#game-user-" + data.id).addClass("game-user-current");
-    if (!$data._replay) {
-        $stage.game.here.css('display', (data.id == $data.id) ? "block" : "none");
-        if (data.id == $data.id) {
-            if (mobile) $stage.game.hereText.val("").focus();
-            else $stage.talk.focus();
-        }
-    }
-    $stage.game.items.html($data.mission = data.mission);
+	$("#game-user-" + data.id).addClass("game-user-current");
+	if (!$data._replay) {
+		$stage.game.here.css('display', (data.id == $data.id) ? "block" : "none");
+		if (data.id == $data.id) {
+			if (mobile) $stage.game.hereText.val("").focus();
+			else $stage.talk.focus();
+		}
+	}
+	$stage.game.items.html($data.mission = data.mission);
 
-    ws.onmessage = _onMessage;
-    clearInterval($data._tTime);
-    clearTrespasses();
-    // No specific chars to track
-    $data._chars = [];
-    $data._speed = data.speed;
-    $data._tTime = addInterval(turnGoing, TICK);
-    $data.turnTime = data.turnTime;
-    $data._turnTime = data.turnTime;
-    $data._roundTime = data.roundTime;
-    $data._turnSound = playSound("T" + data.speed);
-    recordEvent('turnStart', {
-        data: data
-    });
+	ws.onmessage = _onMessage;
+	clearInterval($data._tTime);
+	clearTrespasses();
+	// No specific chars to track
+	$data._chars = [];
+	$data._speed = data.speed;
+	$data._tTime = addInterval(turnGoing, TICK);
+	$data.turnTime = data.turnTime;
+	$data._turnTime = data.turnTime;
+	$data._roundTime = data.roundTime;
+	$data._turnSound = playSound("T" + data.speed);
+	recordEvent('turnStart', {
+		data: data
+	});
 };
 
 $lib.Free.turnGoing = $lib.Classic.turnGoing;
 $lib.Free.turnEnd = function (id, data) {
-    var $sc = $("<div>")
-        .addClass("deltaScore")
-        .html((data.score > 0) ? ("+" + (data.score - data.bonus)) : data.score);
-    var $uc = $(".game-user-current");
-    var hi;
+	var $sc = $("<div>")
+		.addClass("deltaScore")
+		.html((data.score > 0) ? ("+" + (data.score - data.bonus)) : data.score);
+	var $uc = $(".game-user-current");
+	var hi;
 
-    if ($data._turnSound) $data._turnSound.stop();
-    addScore(id, data.score, data.totalScore);
-    clearInterval($data._tTime);
-    if (data.ok) {
-        checkFailCombo();
-        clearTimeout($data._fail);
-        $stage.game.here.hide();
-        $stage.game.chain.html(++$data.chain);
-        pushDisplay(data.value, data.mean, data.theme, data.wc);
-    } else {
-        checkFailCombo(id);
-        $sc.addClass("lost");
-        $(".game-user-current").addClass("game-user-bomb");
-        $stage.game.here.hide();
-        playSound('timeout');
-    }
-    if (data.hint) {
-        // Just display the hint word without special highlighting
-        $stage.game.display.empty()
-            .append($("<label>").html(data.hint));
-    }
-    if (data.bonus) {
-        mobile ? $sc.html("+" + (data.score - data.bonus) + "+" + data.bonus) : addTimeout(function () {
-            var $bc = $("<div>")
-                .addClass("deltaScore bonus")
-                .html("+" + data.bonus);
+	if ($data._turnSound) $data._turnSound.stop();
+	addScore(id, data.score, data.totalScore);
+	clearInterval($data._tTime);
+	if (data.ok) {
+		checkFailCombo();
+		clearTimeout($data._fail);
+		$stage.game.here.hide();
+		$stage.game.chain.html(++$data.chain);
+		pushDisplay(data.value, data.mean, data.theme, data.wc);
+	} else {
+		checkFailCombo(id);
+		$sc.addClass("lost");
+		$(".game-user-current").addClass("game-user-bomb");
+		$stage.game.here.hide();
+		playSound('timeout');
+	}
+	if (data.hint) {
+		// Just display the hint word without special highlighting
+		$stage.game.display.empty()
+			.append($("<label>").html(data.hint));
+	}
+	if (data.bonus) {
+		mobile ? $sc.html("+" + (data.score - data.bonus) + "+" + data.bonus) : addTimeout(function () {
+			var $bc = $("<div>")
+				.addClass("deltaScore bonus")
+				.html("+" + data.bonus);
 
-            drawObtainedScore($uc, $bc);
-        }, 500);
-    }
-    drawObtainedScore($uc, $sc).removeClass("game-user-current");
-    updateScore(id, getScore(id));
+			drawObtainedScore($uc, $bc);
+		}, 500);
+	}
+	drawObtainedScore($uc, $sc).removeClass("game-user-current");
+	updateScore(id, getScore(id));
 };
 
 /**
@@ -2351,444 +2351,444 @@ var PQ_CANVAS_WIDTH = 20;
 var PQ_CANVAS_HEIGHT = 15;
 var PQ_CELL_SIZE = 13; // smaller cells
 var PQ_COLORS = [
-    '#FFFFFF', '#C0C0C0', '#808080', '#000000',
-    '#FF0000', '#FF8000', '#FFFF00', '#BFFF00',
-    '#00AA00', '#00BFFF', '#0000FF', '#6c00d7',
-    '#FF60B0', '#FFD180', '#804000'
+	'#FFFFFF', '#C0C0C0', '#808080', '#000000',
+	'#FF0000', '#FF8000', '#FFFF00', '#BFFF00',
+	'#00AA00', '#00BFFF', '#0000FF', '#6c00d7',
+	'#FF60B0', '#FFD180', '#804000'
 ];
 
 $lib.Picture = {};
 
 $lib.Picture.roundReady = function (data, spec) {
-    clearBoard();
-    $data._relay = true;
-    $data._roundTime = $data.room.time * 1000;
-    $data._fastTime = 10000;
-    $data._pqDrawer = data.drawer;
-    $data._pqTheme = data.theme;
-    $data._pqAnswer = data.answer;
-    $data._pqCanvas = {};
-    $data._pqColor = '#808080';
-    $data._pqIsDrawer = ($data.id === data.drawer);
-    $data._pqPassCount = data.passCount || 0;
-    $data._pqGameStarted = false;
+	clearBoard();
+	$data._relay = true;
+	$data._roundTime = $data.room.time * 1000;
+	$data._fastTime = 10000;
+	$data._pqDrawer = data.drawer;
+	$data._pqTheme = data.theme;
+	$data._pqAnswer = data.answer;
+	$data._pqCanvas = {};
+	$data._pqColor = '#808080';
+	$data._pqIsDrawer = ($data.id === data.drawer);
+	$data._pqPassCount = data.passCount || 0;
+	$data._pqGameStarted = false;
 
-    // Clear any existing pass button timer
-    if ($data._pqPassBtnTimer) {
-        clearTimeout($data._pqPassBtnTimer);
-        $data._pqPassBtnTimer = null;
-    }
+	// Clear any existing pass button timer
+	if ($data._pqPassBtnTimer) {
+		clearTimeout($data._pqPassBtnTimer);
+		$data._pqPassBtnTimer = null;
+	}
 
-    $(".jjoriping,.rounds,.game-body").addClass("cw");
-    $(".jjoriping").css({
-        "float": "none",
-        "margin": "0 auto"
-    });
-    $stage.game.items.hide();
-    $stage.game.bb.hide(); // Hide bb (used in Sock mode), not needed for Picture Quiz
-    $stage.game.here.hide();
+	$(".jjoriping,.rounds,.game-body").addClass("cw");
+	$(".jjoriping").css({
+		"float": "none",
+		"margin": "0 auto"
+	});
+	$stage.game.items.hide();
+	$stage.game.bb.hide(); // Hide bb (used in Sock mode), not needed for Picture Quiz
+	$stage.game.here.hide();
 
-    $lib.Picture.drawDisplay();
+	$lib.Picture.drawDisplay();
 
-    drawRound(data.round);
-    if (!spec) playSound('round_start');
-    clearInterval($data._tTime);
+	drawRound(data.round);
+	if (!spec) playSound('round_start');
+	clearInterval($data._tTime);
 
-    // Reset UI states
-    $(".game-user-bomb").removeClass("game-user-bomb");
-    $stage.game.roundBar.css('background-color', '');
-    $data._pqUrgent = false;
-    stopBGM(); // Ensure clean audio state
+	// Reset UI states
+	$(".game-user-bomb").removeClass("game-user-bomb");
+	$stage.game.roundBar.css('background-color', '');
+	$data._pqUrgent = false;
+	stopBGM(); // Ensure clean audio state
 };
 
 $lib.Picture.drawDisplay = function () {
-    var $main = $("<div>").css({
-        'display': 'flex',
-        'flex-direction': 'column',
-        'align-items': 'center',
-        'justify-content': 'flex-start',
-        'height': '100%',
-        'width': '100%',
-        'padding': '3px',
-        'box-sizing': 'border-box'
-    });
+	var $main = $("<div>").css({
+		'display': 'flex',
+		'flex-direction': 'column',
+		'align-items': 'center',
+		'justify-content': 'flex-start',
+		'height': '100%',
+		'width': '100%',
+		'padding': '3px',
+		'box-sizing': 'border-box'
+	});
 
-    // Header for Topic (Left) and Answer (Right)
-    var $header = $("<div>").css({
-        'display': 'flex',
-        'justify-content': 'space-between',
-        'width': '100%',
-        'padding': '0 20px',
-        'box-sizing': 'border-box',
-        'margin-bottom': '10px'
-    });
+	// Header for Topic (Left) and Answer (Right)
+	var $header = $("<div>").css({
+		'display': 'flex',
+		'justify-content': 'space-between',
+		'width': '100%',
+		'padding': '0 20px',
+		'box-sizing': 'border-box',
+		'margin-bottom': '10px'
+	});
 
-    var isDrawer = $data._pqIsDrawer;
-    var i, x, y;
-    var canvasWidth = PQ_CANVAS_WIDTH * (PQ_CELL_SIZE + 1);
+	var isDrawer = $data._pqIsDrawer;
+	var i, x, y;
+	var canvasWidth = PQ_CANVAS_WIDTH * (PQ_CELL_SIZE + 1);
 
-    // Topic (Top Left)
-    var themeText = L['theme_' + $data._pqTheme] || $data._pqTheme;
-    var $topic = $("<div>").css({
-        'color': '#FFFFFF',
-        'font-size': '12px',
-        'font-weight': 'bold',
-        'text-shadow': '1px 1px 1px #000'
-    }).html(L['pqTheme'] + ": " + themeText);
+	// Topic (Top Left)
+	var themeText = L['theme_' + $data._pqTheme] || $data._pqTheme;
+	var $topic = $("<div>").css({
+		'color': '#FFFFFF',
+		'font-size': '12px',
+		'font-weight': 'bold',
+		'text-shadow': '1px 1px 1px #000'
+	}).html(L['pqTheme'] + ": " + themeText);
 
-    $header.append($topic);
+	$header.append($topic);
 
-    // Answer (Top Right) - Drawer only, Word only
-    // Answer (Top Right) - Drawer only, Word only
-    if (isDrawer && $data._pqAnswer) {
-        var $answer = $("<div>").css({
-            'color': '#FFFFFF',
-            'font-size': '14px',
-            'font-weight': 'bold',
-            'text-shadow': '1px 1px 1px #000'
-        }).html($data._pqAnswer); // Display only the word
-        $header.append($answer);
-    } else if ($data._pqAnswer) {
-        var $answer = $("<div>").css({
-            'color': '#FFFFFF',
-            'font-size': '14px',
-            'font-weight': 'bold',
-            'text-shadow': '1px 1px 1px #000'
-        }).html($data._pqAnswer.length + (L['pqChars'] || "글자"));
-        $header.append($answer);
-    }
+	// Answer (Top Right) - Drawer only, Word only
+	// Answer (Top Right) - Drawer only, Word only
+	if (isDrawer && $data._pqAnswer) {
+		var $answer = $("<div>").css({
+			'color': '#FFFFFF',
+			'font-size': '14px',
+			'font-weight': 'bold',
+			'text-shadow': '1px 1px 1px #000'
+		}).html($data._pqAnswer); // Display only the word
+		$header.append($answer);
+	} else if ($data._pqAnswer) {
+		var $answer = $("<div>").css({
+			'color': '#FFFFFF',
+			'font-size': '14px',
+			'font-weight': 'bold',
+			'text-shadow': '1px 1px 1px #000'
+		}).html($data._pqAnswer.length + (L['pqChars'] || "글자"));
+		$header.append($answer);
+	}
 
-    $main.append($header);
+	$main.append($header);
 
-    // Palette (for drawer) - smaller, above canvas
-    if (isDrawer) {
-        var $palette = $("<div>").css({
-            'display': 'flex',
-            'flex-wrap': 'wrap',
-            'justify-content': 'center',
-            'gap': '2px',
-            'padding': '3px',
-            'background-color': 'rgba(0,0,0,0.4)',
-            'border-radius': '3px',
-            'margin-bottom': '4px',
-            'max-width': canvasWidth + 'px',
-            'margin': '0 auto'
-        });
+	// Palette (for drawer) - smaller, above canvas
+	if (isDrawer) {
+		var $palette = $("<div>").css({
+			'display': 'flex',
+			'flex-wrap': 'wrap',
+			'justify-content': 'center',
+			'gap': '2px',
+			'padding': '3px',
+			'background-color': 'rgba(0,0,0,0.4)',
+			'border-radius': '3px',
+			'margin-bottom': '4px',
+			'max-width': canvasWidth + 'px',
+			'margin': '0 auto'
+		});
 
-        for (i = 0; i < PQ_COLORS.length; i++) {
-            (function (color) {
-                var $color = $("<div>")
-                    .attr("data-color", color)
-                    .css({
-                        'width': '16px',
-                        'height': '16px',
-                        'border-radius': '50%',
-                        'background-color': color,
-                        'border': color === $data._pqColor ? '2px solid #FFD700' : '1px solid #555',
-                        'cursor': 'pointer',
-                        'box-sizing': 'border-box'
-                    });
+		for (i = 0; i < PQ_COLORS.length; i++) {
+			(function (color) {
+				var $color = $("<div>")
+					.attr("data-color", color)
+					.css({
+						'width': '16px',
+						'height': '16px',
+						'border-radius': '50%',
+						'background-color': color,
+						'border': color === $data._pqColor ? '2px solid #FFD700' : '1px solid #555',
+						'cursor': 'pointer',
+						'box-sizing': 'border-box'
+					});
 
-                $color.on('click', function () {
-                    $palette.children().css('border', '1px solid #555');
-                    $(this).css('border', '2px solid #FFD700');
-                    $data._pqColor = color;
-                });
-                $palette.append($color);
-            })(PQ_COLORS[i]);
-        }
-        $main.append($palette);
+				$color.on('click', function () {
+					$palette.children().css('border', '1px solid #555');
+					$(this).css('border', '2px solid #FFD700');
+					$data._pqColor = color;
+				});
+				$palette.append($color);
+			})(PQ_COLORS[i]);
+		}
+		$main.append($palette);
 
-        $main.append($palette);
-    }
+		$main.append($palette);
+	}
 
-    // Canvas - centered, smaller
-    var $canvas = $("<div>").css({
-        'display': 'grid',
-        'grid-template-columns': 'repeat(' + PQ_CANVAS_WIDTH + ', ' + PQ_CELL_SIZE + 'px)',
-        'grid-template-rows': 'repeat(' + PQ_CANVAS_HEIGHT + ', ' + PQ_CELL_SIZE + 'px)',
-        'gap': '1px',
-        'background-color': '#979797ff',
-        'border': '2px solid #1565C0',
-        'border-radius': '2px',
-        'margin': '0 auto'
-    });
+	// Canvas - centered, smaller
+	var $canvas = $("<div>").css({
+		'display': 'grid',
+		'grid-template-columns': 'repeat(' + PQ_CANVAS_WIDTH + ', ' + PQ_CELL_SIZE + 'px)',
+		'grid-template-rows': 'repeat(' + PQ_CANVAS_HEIGHT + ', ' + PQ_CELL_SIZE + 'px)',
+		'gap': '1px',
+		'background-color': '#979797ff',
+		'border': '2px solid #1565C0',
+		'border-radius': '2px',
+		'margin': '0 auto'
+	});
 
-    for (y = 0; y < PQ_CANVAS_HEIGHT; y++) {
-        for (x = 0; x < PQ_CANVAS_WIDTH; x++) {
-            (function (px, py) {
-                var key = px + ',' + py;
-                var color = $data._pqCanvas[key] || '#FFFFFF';
-                var $cell = $("<div>")
-                    .attr("data-x", px)
-                    .attr("data-y", py)
-                    .css({
-                        'width': PQ_CELL_SIZE + 'px',
-                        'height': PQ_CELL_SIZE + 'px',
-                        'background-color': color,
-                        'cursor': isDrawer ? 'crosshair' : 'default'
-                    });
+	for (y = 0; y < PQ_CANVAS_HEIGHT; y++) {
+		for (x = 0; x < PQ_CANVAS_WIDTH; x++) {
+			(function (px, py) {
+				var key = px + ',' + py;
+				var color = $data._pqCanvas[key] || '#FFFFFF';
+				var $cell = $("<div>")
+					.attr("data-x", px)
+					.attr("data-y", py)
+					.css({
+						'width': PQ_CELL_SIZE + 'px',
+						'height': PQ_CELL_SIZE + 'px',
+						'background-color': color,
+						'cursor': isDrawer ? 'crosshair' : 'default'
+					});
 
-                if (isDrawer) {
-                    $cell.on('click', function () {
-                        $lib.Picture.onCellClick(px, py);
-                    });
-                    $cell.on('mouseenter', function (e) {
-                        if (e.buttons === 1) {
-                            $lib.Picture.onCellClick(px, py);
-                        }
-                    });
-                }
-                $canvas.append($cell);
-            })(x, y);
-        }
-    }
-    $main.append($canvas);
+				if (isDrawer) {
+					$cell.on('click', function () {
+						$lib.Picture.onCellClick(px, py);
+					});
+					$cell.on('mouseenter', function (e) {
+						if (e.buttons === 1) {
+							$lib.Picture.onCellClick(px, py);
+						}
+					});
+				}
+				$canvas.append($cell);
+			})(x, y);
+		}
+	}
+	$main.append($canvas);
 
-    // Touch Support for Mobile Drawing
-    if (isDrawer) {
-        var lastTouchCell = null;
-        var handleTouch = function (e) {
-            e.preventDefault(); // Prevent scrolling
-            var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
-            var rect = $canvas[0].getBoundingClientRect();
-            // Account for border (2px) and grid gap (1px)
-            // rect.left includes the border-box. The border is 2px. So content starts at rect.left + 2.
-            // Grid cells are PQ_CELL_SIZE + 1 (gap).
-            var x = Math.floor((touch.clientX - rect.left - 2) / (PQ_CELL_SIZE + 1));
-            var y = Math.floor((touch.clientY - rect.top - 2) / (PQ_CELL_SIZE + 1));
+	// Touch Support for Mobile Drawing
+	if (isDrawer) {
+		var lastTouchCell = null;
+		var handleTouch = function (e) {
+			e.preventDefault(); // Prevent scrolling
+			var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
+			var rect = $canvas[0].getBoundingClientRect();
+			// Account for border (2px) and grid gap (1px)
+			// rect.left includes the border-box. The border is 2px. So content starts at rect.left + 2.
+			// Grid cells are PQ_CELL_SIZE + 1 (gap).
+			var x = Math.floor((touch.clientX - rect.left - 2) / (PQ_CELL_SIZE + 1));
+			var y = Math.floor((touch.clientY - rect.top - 2) / (PQ_CELL_SIZE + 1));
 
-            // Check bounds
-            if (x >= 0 && x < PQ_CANVAS_WIDTH && y >= 0 && y < PQ_CANVAS_HEIGHT) {
-                var cellKey = x + ',' + y;
-                if (lastTouchCell !== cellKey) {
-                    $lib.Picture.onCellClick(x, y);
-                    lastTouchCell = cellKey;
-                }
-            }
-        };
+			// Check bounds
+			if (x >= 0 && x < PQ_CANVAS_WIDTH && y >= 0 && y < PQ_CANVAS_HEIGHT) {
+				var cellKey = x + ',' + y;
+				if (lastTouchCell !== cellKey) {
+					$lib.Picture.onCellClick(x, y);
+					lastTouchCell = cellKey;
+				}
+			}
+		};
 
-        $canvas.on('touchstart', function (e) {
-            lastTouchCell = null; // Reset on new touch
-            handleTouch(e);
-        });
-        $canvas.on('touchmove', handleTouch);
-    }
+		$canvas.on('touchstart', function (e) {
+			lastTouchCell = null; // Reset on new touch
+			handleTouch(e);
+		});
+		$canvas.on('touchmove', handleTouch);
+	}
 
-    // Controls (Pass & Clear) - below canvas
-    if (isDrawer) {
-        var $controls = $("<div>").css({
-            'display': 'flex',
-            'justify-content': 'center',
-            'gap': '10px',
-            'margin-top': '8px',
-            'width': '100%'
-        });
+	// Controls (Pass & Clear) - below canvas
+	if (isDrawer) {
+		var $controls = $("<div>").css({
+			'display': 'flex',
+			'justify-content': 'center',
+			'gap': '10px',
+			'margin-top': '8px',
+			'width': '100%'
+		});
 
-        // Pass button
-        if ($data._pqPassCount < 3) {
-            var passRemaining = 3 - $data._pqPassCount;
-            var $passBtn = $('<button>')
-                .attr('id', 'pq-pass-btn')
-                .css({
-                    'padding': '6px 16px',
-                    'background': 'linear-gradient(135deg, #FF6B6B, #EE5A5A)',
-                    'color': '#FFFFFF',
-                    'border': 'none',
-                    'border-radius': '4px',
-                    'cursor': 'pointer',
-                    'font-size': '12px',
-                    'font-weight': 'bold',
-                    'box-shadow': '0 2px 4px rgba(0,0,0,0.3)'
-                })
-                .html((L['pqPass'] || '패스') + ' (' + passRemaining + ')')
-                .on('click', function () {
-                    playSound('mission');
-                    send('pass', {});
-                    $(this).prop('disabled', true).css('opacity', '0.5');
-                });
-            $controls.append($passBtn);
-        }
+		// Pass button
+		if ($data._pqPassCount < 3) {
+			var passRemaining = 3 - $data._pqPassCount;
+			var $passBtn = $('<button>')
+				.attr('id', 'pq-pass-btn')
+				.css({
+					'padding': '6px 16px',
+					'background': 'linear-gradient(135deg, #FF6B6B, #EE5A5A)',
+					'color': '#FFFFFF',
+					'border': 'none',
+					'border-radius': '4px',
+					'cursor': 'pointer',
+					'font-size': '12px',
+					'font-weight': 'bold',
+					'box-shadow': '0 2px 4px rgba(0,0,0,0.3)'
+				})
+				.html((L['pqPass'] || '패스') + ' (' + passRemaining + ')')
+				.on('click', function () {
+					playSound('mission');
+					send('pass', {});
+					$(this).prop('disabled', true).css('opacity', '0.5');
+				});
+			$controls.append($passBtn);
+		}
 
-        // Clear All button
-        var $clearBtn = $('<button>')
-            .attr('id', 'pq-clear-btn')
-            .css({
-                'padding': '6px 16px',
-                'background': 'linear-gradient(135deg, #FFB74D, #FFA726)',
-                'color': '#FFFFFF',
-                'border': 'none',
-                'border-radius': '4px',
-                'cursor': 'pointer',
-                'font-size': '12px',
-                'font-weight': 'bold',
-                'box-shadow': '0 2px 4px rgba(0,0,0,0.3)',
-                'display': 'flex', // Flex to align icon/text if added later
-                'align-items': 'center'
-            })
-            .html((L['pqClear'] || '모두 지우기'))
-            .on('click', function () {
-                showConfirm(L['pqSureClear'] || '정말 모두 지우시겠습니까?', function (res) {
-                    if (res) {
-                        // Client-side clear immediately for responsiveness
-                        $data._pqCanvas = {};
-                        $canvas.children().css('background-color', '#FFFFFF');
-                        // Send clear to server
-                        send('clear', {});
-                    }
-                });
-            });
-        $controls.append($clearBtn);
+		// Clear All button
+		var $clearBtn = $('<button>')
+			.attr('id', 'pq-clear-btn')
+			.css({
+				'padding': '6px 16px',
+				'background': 'linear-gradient(135deg, #FFB74D, #FFA726)',
+				'color': '#FFFFFF',
+				'border': 'none',
+				'border-radius': '4px',
+				'cursor': 'pointer',
+				'font-size': '12px',
+				'font-weight': 'bold',
+				'box-shadow': '0 2px 4px rgba(0,0,0,0.3)',
+				'display': 'flex', // Flex to align icon/text if added later
+				'align-items': 'center'
+			})
+			.html((L['pqClear'] || '모두 지우기'))
+			.on('click', function () {
+				showConfirm(L['pqSureClear'] || '정말 모두 지우시겠습니까?', function (res) {
+					if (res) {
+						// Client-side clear immediately for responsiveness
+						$data._pqCanvas = {};
+						$canvas.children().css('background-color', '#FFFFFF');
+						// Send clear to server
+						send('clear', {});
+					}
+				});
+			});
+		$controls.append($clearBtn);
 
-        $main.append($controls);
-    }
+		$main.append($controls);
+	}
 
-    $stage.game.display.empty().append($main);
+	$stage.game.display.empty().append($main);
 };
 
 $lib.Picture.onCellClick = function (x, y) {
-    if (!$data._pqIsDrawer) return;
+	if (!$data._pqIsDrawer) return;
 
-    var key = x + ',' + y;
-    var color = $data._pqColor;
+	var key = x + ',' + y;
+	var color = $data._pqColor;
 
-    $data._pqCanvas[key] = color;
-    $("div[data-x='" + x + "'][data-y='" + y + "']").css("background-color", color);
+	$data._pqCanvas[key] = color;
+	$("div[data-x='" + x + "'][data-y='" + y + "']").css("background-color", color);
 
-    send('draw', { x: x, y: y, color: color });
+	send('draw', { x: x, y: y, color: color });
 };
 
 $lib.Picture.handleDraw = function (data) {
-    var key = data.x + ',' + data.y;
-    $data._pqCanvas[key] = data.color;
-    $("div[data-x='" + data.x + "'][data-y='" + data.y + "']").css("background-color", data.color);
+	var key = data.x + ',' + data.y;
+	$data._pqCanvas[key] = data.color;
+	$("div[data-x='" + data.x + "'][data-y='" + data.y + "']").css("background-color", data.color);
 };
 
 $lib.Picture.handleClear = function (data) {
-    $data._pqCanvas = {};
-    // Reset all cells to white
-    // Assuming $stage.game.display contains the canvas cells
-    // We can select them by attribute or just rebuild, but selecting is faster
-    $("div[data-x][data-y]").css("background-color", "#FFFFFF");
+	$data._pqCanvas = {};
+	// Reset all cells to white
+	// Assuming $stage.game.display contains the canvas cells
+	// We can select them by attribute or just rebuild, but selecting is faster
+	$("div[data-x][data-y]").css("background-color", "#FFFFFF");
 };
 
 $lib.Picture.turnStart = function (data, spec) {
-    // Clear previous visual effects (like Jaqwi does)
-    $(".game-user-current").removeClass("game-user-current");
-    $(".game-user-bomb").removeClass("game-user-bomb");
+	// Clear previous visual effects (like Jaqwi does)
+	$(".game-user-current").removeClass("game-user-current");
+	$(".game-user-bomb").removeClass("game-user-bomb");
 
-    $data._pqDrawer = data.drawer;
-    $data._pqIsDrawer = ($data.id === data.drawer);
-    $data._pqGameStarted = true;
+	$data._pqDrawer = data.drawer;
+	$data._pqIsDrawer = ($data.id === data.drawer);
+	$data._pqGameStarted = true;
 
-    // Clear any existing pass button timer
-    if ($data._pqPassBtnTimer) {
-        clearTimeout($data._pqPassBtnTimer);
-    }
+	// Clear any existing pass button timer
+	if ($data._pqPassBtnTimer) {
+		clearTimeout($data._pqPassBtnTimer);
+	}
 
-    // Hide pass button after 5 seconds grace period
-    $data._pqPassBtnTimer = setTimeout(function () {
-        $('#pq-pass-btn').remove();
-    }, 5000);
+	// Hide pass button after 5 seconds grace period
+	$data._pqPassBtnTimer = setTimeout(function () {
+		$('#pq-pass-btn').remove();
+	}, 5000);
 
-    clearInterval($data._tTime);
-    $data._tTime = addInterval($lib.Picture.turnGoing, TICK);
-    playBGM('jaqwi');
-    $data._pqUrgent = false;
+	clearInterval($data._tTime);
+	$data._tTime = addInterval($lib.Picture.turnGoing, TICK);
+	playBGM('jaqwi');
+	$data._pqUrgent = false;
 
-    $(".game-user-current").removeClass("game-user-current");
-    $("#game-user-" + data.drawer).addClass("game-user-current");
+	$(".game-user-current").removeClass("game-user-current");
+	$("#game-user-" + data.drawer).addClass("game-user-current");
 
-    $stage.game.here.hide();
+	$stage.game.here.hide();
 };
 
 $lib.Picture.turnGoing = function () {
-    var $rtb = $stage.game.roundBar;
-    var tt;
+	var $rtb = $stage.game.roundBar;
+	var tt;
 
-    if (!$data.room) {
-        clearInterval($data._tTime);
-        return;
-    }
-    $data._roundTime -= TICK;
+	if (!$data.room) {
+		clearInterval($data._tTime);
+		return;
+	}
+	$data._roundTime -= TICK;
 
-    if ($data._relay && $data._roundTime <= $data.room.time * 1000 / 6 && !$data._pqUrgent) {
-        $data._pqUrgent = true;
-        $rtb.css('background-color', '#E57373');
-        playBGM('jaqwiF');
-    }
+	if ($data._relay && $data._roundTime <= $data.room.time * 1000 / 6 && !$data._pqUrgent) {
+		$data._pqUrgent = true;
+		$rtb.css('background-color', '#E57373');
+		playBGM('jaqwiF');
+	}
 
-    tt = $data._spectate ? L['stat_spectate'] : ($data._roundTime * 0.001).toFixed(1) + L['SECOND'];
-    $rtb.width($data._roundTime / $data.room.time * 0.1 + "%").html(tt);
+	tt = $data._spectate ? L['stat_spectate'] : ($data._roundTime * 0.001).toFixed(1) + L['SECOND'];
+	$rtb.width($data._roundTime / $data.room.time * 0.1 + "%").html(tt);
 };
 
 $lib.Picture.turnEnd = function (id, data) {
-    var $uc = $("#game-user-" + id);
-    var $sc;
+	var $uc = $("#game-user-" + id);
+	var $sc;
 
-    if (data.giveup) {
-        $uc.addClass("game-user-bomb");
-        playSound('timeout');
-        return;
-    }
+	if (data.giveup) {
+		$uc.addClass("game-user-bomb");
+		playSound('timeout');
+		return;
+	}
 
-    if (data.ok) {
-        $sc = $("<div>").addClass("deltaScore").html("+" + data.score);
-        playSound('success');
-        addScore(id, data.score, data.totalScore);
-        updateScore(id, getScore(id)).addClass("game-user-current");
-        drawObtainedScore($uc, $sc);
-        if ($data._roundTime > 10000) $data._roundTime = 10000;
-    } else if (data.answer) {
-        if (typeof data.drawerScore === 'number') {
-            var $drawerUc = $("#game-user-" + data.drawer);
-            var $drawerSc = $("<div>").addClass("deltaScore");
-            if (data.drawerScore < 0) {
-                // Negative score (penalty)
-                $drawerSc.addClass("lost").html(data.drawerScore);
-                $drawerUc.addClass("game-user-bomb");
-            } else {
-                $drawerSc.html("+" + data.drawerScore);
-            }
-            drawObtainedScore($drawerUc, $drawerSc);
+	if (data.ok) {
+		$sc = $("<div>").addClass("deltaScore").html("+" + data.score);
+		playSound('success');
+		addScore(id, data.score, data.totalScore);
+		updateScore(id, getScore(id)).addClass("game-user-current");
+		drawObtainedScore($uc, $sc);
+		if ($data._roundTime > 10000) $data._roundTime = 10000;
+	} else if (data.answer) {
+		if (typeof data.drawerScore === 'number') {
+			var $drawerUc = $("#game-user-" + data.drawer);
+			var $drawerSc = $("<div>").addClass("deltaScore");
+			if (data.drawerScore < 0) {
+				// Negative score (penalty)
+				$drawerSc.addClass("lost").html(data.drawerScore);
+				$drawerUc.addClass("game-user-bomb");
+			} else {
+				$drawerSc.html("+" + data.drawerScore);
+			}
+			drawObtainedScore($drawerUc, $drawerSc);
 
-            // Update Drawer Total Score UI
-            var currentScore = getScore(data.drawer);
-            var newScore = currentScore + data.drawerScore;
-            addScore(data.drawer, data.drawerScore, newScore);
-            updateScore(data.drawer, newScore);
-        }
+			// Update Drawer Total Score UI
+			var currentScore = getScore(data.drawer);
+			var newScore = currentScore + data.drawerScore;
+			addScore(data.drawer, data.drawerScore, newScore);
+			updateScore(data.drawer, newScore);
+		}
 
-        // Show answer in YELLOW when revealed
-        $stage.game.display.append(
-            $("<div>").css({
-                'position': 'absolute',
-                'top': '50%',
-                'left': '50%',
-                'transform': 'translate(-50%, -50%)',
-                'font-size': '18px',
-                'font-weight': 'bold',
-                'color': '#FFFF00',
-                'text-shadow': '2px 2px 3px #000',
-                'padding': '8px 15px',
-                'background': 'rgba(0,0,0,0.7)',
-                'border-radius': '5px',
-                'z-index': '100'
-            }).html(L['pqAnswer'] + ": " + data.answer)
-        );
-        $data._relay = false;
-        clearInterval($data._tTime); // Stop the timer
-        stopBGM(); // Stop fast music if playing
-        playSound('horr');
+		// Show answer in YELLOW when revealed
+		$stage.game.display.append(
+			$("<div>").css({
+				'position': 'absolute',
+				'top': '50%',
+				'left': '50%',
+				'transform': 'translate(-50%, -50%)',
+				'font-size': '18px',
+				'font-weight': 'bold',
+				'color': '#FFFF00',
+				'text-shadow': '2px 2px 3px #000',
+				'padding': '8px 15px',
+				'background': 'rgba(0,0,0,0.7)',
+				'border-radius': '5px',
+				'z-index': '100'
+			}).html(L['pqAnswer'] + ": " + data.answer)
+		);
+		$data._relay = false;
+		clearInterval($data._tTime); // Stop the timer
+		stopBGM(); // Stop fast music if playing
+		playSound('horr');
 
-        // Reset UI states
-        $stage.game.roundBar.css('background-color', '');
-        $data._pqUrgent = false;
-    }
+		// Reset UI states
+		$stage.game.roundBar.css('background-color', '');
+		$data._pqUrgent = false;
+	}
 
-    if (data.drawerLeft) {
-        notice(L['pqDrawerLeft'] || "술래가 나갔습니다");
-    }
+	if (data.drawerLeft) {
+		notice(L['pqDrawerLeft'] || "술래가 나갔습니다");
+	}
 };
 
 $lib.Picture.turnHint = function (data) {
