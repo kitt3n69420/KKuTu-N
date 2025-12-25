@@ -152,8 +152,7 @@ DB.ready = function () {
 		https.createServer(options, Server).listen(443);
 	}
 };
-// WAF Support
-(GLOBAL.GAME_LISTENER || Const.MAIN_PORTS).forEach(function (v, i) {
+Const.MAIN_PORTS.forEach(function (v, i) {
 	var KEY = process.env['WS_KEY'];
 	var protocol;
 	if (Const.IS_SECURED) {
@@ -283,7 +282,7 @@ Server.get("/", function (req, res) {
 			'_page': "kkutu",
 			'_script': viewName == "kkutu" ? "game_kkutu" : undefined,
 			'_id': id,
-			'PORT': (GLOBAL.GAME_PUBLIC || Const.MAIN_PORTS)[server],
+			'PORT': Const.MAIN_PORTS[server],
 			'HOST': req.hostname,
 			'PROTOCOL': Const.IS_SECURED ? 'wss' : 'ws',
 			'TEST': req.query.test,
