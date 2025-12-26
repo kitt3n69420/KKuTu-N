@@ -286,6 +286,7 @@ Cluster.on('message', function (worker, msg) {
 				if (msg.removed && ROOM[msg.id]) {
 					delete ROOM[msg.id];
 					JLog.warn(`Room ${msg.id} sync-deleted (master)`);
+					KKuTu.publish('room', { room: { id: msg.id, players: [] } });
 				}
 			} else {
 				// 나가기 말고 연결 자체가 끊겼을 때 생기는 듯 하다.
@@ -300,7 +301,10 @@ Cluster.on('message', function (worker, msg) {
 						JLog.warn(`^ OK`);
 					}
 				}
-				if (msg.removed) delete ROOM[msg.id];
+				if (msg.removed) {
+					delete ROOM[msg.id];
+					KKuTu.publish('room', { room: { id: msg.id, players: [] } });
+				}
 			}
 			break;
 		case "user-publish":
@@ -333,6 +337,7 @@ Cluster.on('message', function (worker, msg) {
 			if (ROOM[msg.room.id]) {
 				delete ROOM[msg.room.id];
 				JLog.info(`[IPC] room-invalid: Room ${msg.room.id} deleted from master`);
+				KKuTu.publish('room', { room: { id: msg.room.id, players: [] } });
 			} else {
 				JLog.warn(`[IPC] room-invalid: Room ${msg.room.id} not found on master (already deleted?)`);
 			}

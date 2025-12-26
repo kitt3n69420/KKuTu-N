@@ -1408,8 +1408,9 @@ $lib.Classic.turnStart = function (data) {
 	if (!$data._replay) {
 		$stage.game.here.css('display', (data.id == $data.id) ? "block" : "none");
 		if (data.id == $data.id) {
-			if (mobile) $stage.game.hereText.val("").focus();
-			else $stage.talk.focus();
+			$data._relay = true;
+			$stage.game.hereText.val("");
+			$stage.talk.focus();
 		}
 	}
 	$stage.game.items.html($data.mission = data.mission);
@@ -1450,6 +1451,7 @@ $lib.Classic.turnEnd = function (id, data) {
 	var hi;
 
 	if ($data._turnSound) $data._turnSound.stop();
+	if (id == $data.id) $data._relay = false;
 	addScore(id, data.score, data.totalScore);
 	clearInterval($data._tTime);
 	if (data.ok) {
@@ -1752,7 +1754,7 @@ $lib.Typing.roundReady = function (data) {
 	var i, len = $data.room.game.title.length;
 	var $l;
 
-	$data._chatter = mobile ? $stage.game.hereText : $stage.talk;
+	$data._chatter = $stage.talk;
 	clearBoard();
 	$data._round = data.round;
 	$data._roundTime = $data.room.time * 1000;
@@ -1801,9 +1803,10 @@ $lib.Typing.spaceOff = function () {
 };
 $lib.Typing.turnStart = function (data) {
 	if (!$data._spectate) {
+		$data._relay = true;
 		$stage.game.here.show();
-		if (mobile) $stage.game.hereText.val("").focus();
-		else $stage.talk.val("").focus();
+		$stage.game.hereText.val("");
+		$stage.talk.val("").focus();
 		$lib.Typing.spaceOn();
 	}
 	ws.onmessage = _onMessage;
@@ -1822,6 +1825,8 @@ $lib.Typing.turnEnd = function (id, data) {
 		.addClass("deltaScore")
 		.html("+" + data.score);
 	var $uc = $("#game-user-" + id);
+
+	if (id == $data.id) $data._relay = false;
 
 	if (data.error) {
 		$data.chain++;
@@ -1920,8 +1925,9 @@ $lib.Hunmin.turnStart = function (data) {
 	if (!$data._replay) {
 		$stage.game.here.css('display', (data.id == $data.id) ? "block" : "none");
 		if (data.id == $data.id) {
-			if (mobile) $stage.game.hereText.val("").focus();
-			else $stage.talk.focus();
+			$data._relay = true;
+			$stage.game.hereText.val("");
+			$stage.talk.focus();
 		}
 	}
 	$stage.game.items.html($data.mission = data.mission);
@@ -1949,6 +1955,7 @@ $lib.Hunmin.turnEnd = function (id, data) {
 	var hi;
 
 	$data._turnSound.stop();
+	if (id == $data.id) $data._relay = false;
 	addScore(id, data.score, data.totalScore);
 	clearInterval($data._tTime);
 	if (data.ok) {
@@ -2032,8 +2039,9 @@ $lib.Daneo.turnStart = function (data) {
 	if (!$data._replay) {
 		$stage.game.here.css('display', (data.id == $data.id) ? "block" : "none");
 		if (data.id == $data.id) {
-			if (mobile) $stage.game.hereText.val("").focus();
-			else $stage.talk.focus();
+			$data._relay = true;
+			$stage.game.hereText.val("");
+			$stage.talk.focus();
 		}
 	}
 	$stage.game.items.html($data.mission = data.mission);
@@ -2061,6 +2069,7 @@ $lib.Daneo.turnEnd = function (id, data) {
 	var hi;
 
 	$data._turnSound.stop();
+	if (id == $data.id) $data._relay = false;
 	addScore(id, data.score, data.totalScore);
 	clearInterval($data._tTime);
 	if (data.ok) {
@@ -2148,8 +2157,9 @@ $lib.Free.turnStart = function (data) {
     if (!$data._replay) {
         $stage.game.here.css('display', (data.id == $data.id) ? "block" : "none");
         if (data.id == $data.id) {
-            if (mobile) $stage.game.hereText.val("").focus();
-            else $stage.talk.focus();
+            $data._relay = true;
+            $stage.game.hereText.val("");
+            $stage.talk.focus();
         }
     }
     $stage.game.items.html($data.mission = data.mission);
@@ -2179,6 +2189,7 @@ $lib.Free.turnEnd = function (id, data) {
     var hi;
 
     if ($data._turnSound) $data._turnSound.stop();
+    if (id == $data.id) $data._relay = false;
     addScore(id, data.score, data.totalScore);
     clearInterval($data._tTime);
     if (data.ok) {
@@ -2280,15 +2291,20 @@ $lib.Sock.turnEnd = function (id, data) {
 $lib.Sock.drawMaps = function () {
 	var len = $data._maps.length;
 
+	var cols = Math.max(2, Math.ceil(len / 18));
+
 	$stage.game.bb.empty();
-	if (len > 40) $stage.game.bb.addClass("large-mode");
-	else $stage.game.bb.removeClass("large-mode");
+	// $stage.game.bb.css('--bb-cols', cols); // Removed CSS var approach
+	if (cols > 2) $stage.game.bb.addClass("many-cols");
+	else $stage.game.bb.removeClass("many-cols");
+
+	var widthPct = (100 / cols) + "%"; // Calculate percentage directly
 
 	$data._maps.sort(function (a, b) { return b.length - a.length; }).forEach(function (item) {
 		$stage.game.bb.append($word(item));
 	});
 	function $word(text) {
-		var $R = $("<div>").addClass("bb-word");
+		var $R = $("<div>").addClass("bb-word").css('width', widthPct);
 		var i, len = text.length;
 		var $c;
 
@@ -2895,7 +2911,7 @@ function showConfirm(msg, callback, yesText, noText) {
 }
 function showAlert(msg, callback) {
 	$stage.dialog.alertText.html(msg.replace(/\n/g, '<br>'));
-	showDialog($stage.dialog.alert);
+	showDialog($stage.dialog.alert, true);
 
 	$stage.dialog.alertOK.off('click').on('click', function () {
 		$stage.dialog.alert.hide();
@@ -3283,6 +3299,13 @@ function onMessage(data) {
 				notice(data.value || L[data.code] || L['error_' + data.code]);
 			} else {
 				chat(data.profile || { title: L['robot'] }, data.value, data.from, data.timestamp);
+			}
+			break;
+		case 'system':
+			if (data.code === 'roomDestroyed' || data.code === 'room_destroy_warning') {
+				showAlert(data.value || L[data.code]);
+			} else {
+				notice(data.value || L[data.code] || L['error_' + data.code]);
 			}
 			break;
 		case 'roomStuck':

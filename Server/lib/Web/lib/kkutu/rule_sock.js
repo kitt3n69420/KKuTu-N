@@ -66,15 +66,20 @@ $lib.Sock.turnEnd = function (id, data) {
 $lib.Sock.drawMaps = function () {
 	var len = $data._maps.length;
 
+	var cols = Math.max(2, Math.ceil(len / 18));
+
 	$stage.game.bb.empty();
-	if (len > 40) $stage.game.bb.addClass("large-mode");
-	else $stage.game.bb.removeClass("large-mode");
+	// $stage.game.bb.css('--bb-cols', cols); // Removed CSS var approach
+	if (cols > 2) $stage.game.bb.addClass("many-cols");
+	else $stage.game.bb.removeClass("many-cols");
+
+	var widthPct = (100 / cols) + "%"; // Calculate percentage directly
 
 	$data._maps.sort(function (a, b) { return b.length - a.length; }).forEach(function (item) {
 		$stage.game.bb.append($word(item));
 	});
 	function $word(text) {
-		var $R = $("<div>").addClass("bb-word");
+		var $R = $("<div>").addClass("bb-word").css('width', widthPct);
 		var i, len = text.length;
 		var $c;
 

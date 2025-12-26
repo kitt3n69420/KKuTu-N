@@ -899,17 +899,16 @@ iframe {
 	box-sizing: border-box;
 }
 
-.bb.large-mode {
+.bb.many-cols {
 	padding: 0px !important;
 }
 
-.bb.large-mode .bb-word {
-	width: 33.3%;
+.bb.many-cols .bb-word {
 	box-sizing: border-box;
 	padding: 0px !important;
 }
 
-.bb.large-mode .bb-char {
+.bb.many-cols .bb-char {
 	width: 9px;
 	padding: 1px;
 	font-size: 10px;

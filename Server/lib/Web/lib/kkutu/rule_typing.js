@@ -20,7 +20,7 @@ $lib.Typing.roundReady = function (data) {
 	var i, len = $data.room.game.title.length;
 	var $l;
 
-	$data._chatter = mobile ? $stage.game.hereText : $stage.talk;
+	$data._chatter = $stage.talk;
 	clearBoard();
 	$data._round = data.round;
 	$data._roundTime = $data.room.time * 1000;
@@ -69,9 +69,10 @@ $lib.Typing.spaceOff = function () {
 };
 $lib.Typing.turnStart = function (data) {
 	if (!$data._spectate) {
+		$data._relay = true;
 		$stage.game.here.show();
-		if (mobile) $stage.game.hereText.val("").focus();
-		else $stage.talk.val("").focus();
+		$stage.game.hereText.val("");
+		$stage.talk.val("").focus();
 		$lib.Typing.spaceOn();
 	}
 	ws.onmessage = _onMessage;
@@ -90,6 +91,8 @@ $lib.Typing.turnEnd = function (id, data) {
 		.addClass("deltaScore")
 		.html("+" + data.score);
 	var $uc = $("#game-user-" + id);
+
+	if (id == $data.id) $data._relay = false;
 
 	if (data.error) {
 		$data.chain++;

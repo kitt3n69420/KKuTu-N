@@ -87,7 +87,7 @@ function showConfirm(msg, callback, yesText, noText) {
 }
 function showAlert(msg, callback) {
 	$stage.dialog.alertText.html(msg.replace(/\n/g, '<br>'));
-	showDialog($stage.dialog.alert);
+	showDialog($stage.dialog.alert, true);
 
 	$stage.dialog.alertOK.off('click').on('click', function () {
 		$stage.dialog.alert.hide();
@@ -475,6 +475,13 @@ function onMessage(data) {
 				notice(data.value || L[data.code] || L['error_' + data.code]);
 			} else {
 				chat(data.profile || { title: L['robot'] }, data.value, data.from, data.timestamp);
+			}
+			break;
+		case 'system':
+			if (data.code === 'roomDestroyed' || data.code === 'room_destroy_warning') {
+				showAlert(data.value || L[data.code]);
+			} else {
+				notice(data.value || L[data.code] || L['error_' + data.code]);
 			}
 			break;
 		case 'roomStuck':

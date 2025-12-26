@@ -46,8 +46,9 @@ $lib.Classic.turnStart = function (data) {
 	if (!$data._replay) {
 		$stage.game.here.css('display', (data.id == $data.id) ? "block" : "none");
 		if (data.id == $data.id) {
-			if (mobile) $stage.game.hereText.val("").focus();
-			else $stage.talk.focus();
+			$data._relay = true;
+			$stage.game.hereText.val("");
+			$stage.talk.focus();
 		}
 	}
 	$stage.game.items.html($data.mission = data.mission);
@@ -88,6 +89,7 @@ $lib.Classic.turnEnd = function (id, data) {
 	var hi;
 
 	if ($data._turnSound) $data._turnSound.stop();
+	if (id == $data.id) $data._relay = false;
 	addScore(id, data.score, data.totalScore);
 	clearInterval($data._tTime);
 	if (data.ok) {

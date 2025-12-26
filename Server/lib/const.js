@@ -26,10 +26,14 @@ exports.SPAM_ADD_DELAY = 750;
 exports.SPAM_LIMIT = 7;
 exports.BLOCKED_LENGTH = 10000;
 exports.KICK_BY_SPAM = 9;
-exports.MAX_OBSERVER = 4;
+exports.MAX_OBSERVER = 8;
+exports.JAMSU_WARN_TIME = 240000;
+exports.JAMSU_BOOM_TIME = 60000;
 exports.TESTER = GLOBAL.ADMIN.concat([
 	"Input tester id here"
 ]);
+exports.JAMSU_DELAY_WARN = 10000;
+exports.JAMSU_DELAY_ACTION = 10000;
 exports.IS_SECURED = GLOBAL.IS_SECURED;
 exports.SSL_OPTIONS = GLOBAL.SSL_OPTIONS;
 exports.WAF = GLOBAL.WAF;
